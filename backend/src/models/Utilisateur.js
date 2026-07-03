@@ -3,6 +3,7 @@ const sequelize = require('../config/db');
 
 const Utilisateur = sequelize.define('Utilisateur', {
   id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+  compte_id: { type: DataTypes.UUID, allowNull: false },
   nom: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING, unique: true, allowNull: false },
   mot_de_passe: { type: DataTypes.STRING, allowNull: false },

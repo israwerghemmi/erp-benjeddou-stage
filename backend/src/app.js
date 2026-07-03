@@ -6,6 +6,12 @@ const { sequelize } = require('./models');
 const app = express();
 app.use(cors());
 app.use(express.json());
+const comptesRoutes = require('./routes/comptesRoutes');
+const authRoutes = require('./routes/authRoutes');
+const testRoutes = require('./routes/testRoutes');
+app.use('/api/test', testRoutes);
+app.use('/api/comptes', comptesRoutes);
+app.use('/api/auth', authRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'API is running' });
