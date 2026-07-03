@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const sequelize = require('./config/db');
+const { sequelize } = require('./models');
 
 const app = express();
 app.use(cors());
@@ -13,9 +13,9 @@ app.get('/api/health', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-sequelize.authenticate()
+sequelize.sync({ alter: true })
   .then(() => {
-    console.log('Connexion PostgreSQL réussie');
+    console.log('✅ Tables synchronisées avec PostgreSQL');
     app.listen(PORT, () => console.log(`Serveur lancé sur le port ${PORT}`));
   })
-  .catch((err) => console.error('Erreur de connexion BDD :', err));
+  .catch((err) => console.error('❌ Erreur de synchronisation :', err));
