@@ -10,6 +10,13 @@ const comptesRoutes = require('./routes/comptesRoutes');
 const authRoutes = require('./routes/authRoutes');
 const testRoutes = require('./routes/testRoutes');
 const departementsRoutes = require('./routes/departementsRoutes');
+const clientsRoutes = require('./routes/clientsRoutes');
+const produitsRoutes = require('./routes/produitsRoutes');
+const fournisseursRoutes = require('./routes/fournisseursRoutes');
+
+app.use('/api/produits', produitsRoutes);
+app.use('/api/fournisseurs', fournisseursRoutes);
+app.use('/api/clients', clientsRoutes);
 app.use('/api/departements', departementsRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/comptes', comptesRoutes);
