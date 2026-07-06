@@ -17,6 +17,7 @@ const Compte = sequelize.define('Compte', {
   },
   trial_utilisations_restantes: { type: DataTypes.INTEGER, defaultValue: 30 },
   date_activation: { type: DataTypes.DATE, allowNull: true },
+  db_name: { type: DataTypes.STRING, allowNull: true, unique: true },
 }, { tableName: 'comptes', timestamps: true });
 
 module.exports = Compte;

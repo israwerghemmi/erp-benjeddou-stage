@@ -25,11 +25,10 @@ exports.login = async (req, res) => {
     await utilisateur.save();
 
     const token = jwt.sign(
-      { utilisateur_id: utilisateur.id, compte_id: utilisateur.compte_id, role: utilisateur.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
+        { utilisateur_id: utilisateur.id, compte_id: utilisateur.compte_id, db_name: utilisateur.Compte.db_name, role: utilisateur.role },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+      );
     return res.json({
       message: 'Connexion réussie.',
       token,
