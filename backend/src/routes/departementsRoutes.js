@@ -2,14 +2,11 @@ const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/authMiddleware');
 const tenantMiddleware = require('../middlewares/tenantMiddleware');
+const departementsController = require('../controllers/departementsController');
 
-router.get('/', authMiddleware, tenantMiddleware, async (req, res) => {
-  try {
-    const departements = await req.tenantModels.Departement.findAll();
-    res.json(departements);
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur.', error: error.message });
-  }
-});
+router.use(authMiddleware, tenantMiddleware);
+
+router.post('/', departementsController.creer);
+router.get('/', departementsController.listerTous);
 
 module.exports = router;

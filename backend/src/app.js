@@ -13,7 +13,13 @@ const departementsRoutes = require('./routes/departementsRoutes');
 const clientsRoutes = require('./routes/clientsRoutes');
 const produitsRoutes = require('./routes/produitsRoutes');
 const fournisseursRoutes = require('./routes/fournisseursRoutes');
+const devisRoutes = require('./routes/devisRoutes');
+const commandesRoutes = require('./routes/commandesRoutes');
+const rolesRoutes = require('./routes/rolesRoutes');
 
+app.use('/api/roles', rolesRoutes);
+app.use('/api/devis', devisRoutes);
+app.use('/api/commandes', commandesRoutes);
 app.use('/api/produits', produitsRoutes);
 app.use('/api/fournisseurs', fournisseursRoutes);
 app.use('/api/clients', clientsRoutes);
