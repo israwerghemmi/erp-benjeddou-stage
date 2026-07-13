@@ -4,6 +4,7 @@ import api from '../services/api';
 export default function Clients() {
   const [clients, setClients] = useState([]);
   const [nouveauClient, setNouveauClient] = useState({ nom: '', email: '', telephone: '', adresse: '' });
+  const [clientEnEdition, setClientEnEdition] = useState(null);
   const [erreur, setErreur] = useState('');
 
   const chargerClients = async () => {
@@ -27,6 +28,34 @@ export default function Clients() {
       chargerClients();
     } catch (err) {
       setErreur('Erreur lors de l\'ajout du client.');
+    }
+  };
+
+  const demarrerEdition = (client) => {
+    setClientEnEdition({ ...client });
+  };
+
+  const annulerEdition = () => setClientEnEdition(null);
+
+  const handleChangeEdition = (e) => setClientEnEdition({ ...clientEnEdition, [e.target.name]: e.target.value });
+
+  const sauvegarderEdition = async () => {
+    try {
+      await api.put(`/clients/${clientEnEdition.id}`, clientEnEdition);
+      setClientEnEdition(null);
+      chargerClients();
+    } catch (err) {
+      setErreur('Erreur lors de la modification.');
+    }
+  };
+
+  const supprimerClient = async (id) => {
+    if (!window.confirm('Supprimer ce client ?')) return;
+    try {
+      await api.delete(`/clients/${id}`);
+      chargerClients();
+    } catch (err) {
+      setErreur('Erreur lors de la suppression.');
     }
   };
 
@@ -59,15 +88,35 @@ export default function Clients() {
                 <th className="p-3">Email</th>
                 <th className="p-3">Téléphone</th>
                 <th className="p-3">Adresse</th>
+                <th className="p-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               {clients.map((c) => (
                 <tr key={c.id} className="border-t border-gray-100">
-                  <td className="p-3">{c.nom}</td>
-                  <td className="p-3">{c.email}</td>
-                  <td className="p-3">{c.telephone}</td>
-                  <td className="p-3">{c.adresse}</td>
+                  {clientEnEdition?.id === c.id ? (
+                    <>
+                      <td className="p-2"><input name="nom" value={clientEnEdition.nom} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
+                      <td className="p-2"><input name="email" value={clientEnEdition.email || ''} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
+                      <td className="p-2"><input name="telephone" value={clientEnEdition.telephone || ''} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
+                      <td className="p-2"><input name="adresse" value={clientEnEdition.adresse || ''} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
+                      <td className="p-3 flex gap-2">
+                        <button onClick={sauvegarderEdition} className="text-green-600 text-sm font-medium hover:underline">Enregistrer</button>
+                        <button onClick={annulerEdition} className="text-gray-500 text-sm font-medium hover:underline">Annuler</button>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="p-3">{c.nom}</td>
+                      <td className="p-3">{c.email}</td>
+                      <td className="p-3">{c.telephone}</td>
+                      <td className="p-3">{c.adresse}</td>
+                      <td className="p-3 flex gap-3">
+                        <button onClick={() => demarrerEdition(c)} className="text-blue-600 text-sm font-medium hover:underline">Modifier</button>
+                        <button onClick={() => supprimerClient(c.id)} className="text-red-600 text-sm font-medium hover:underline">Supprimer</button>
+                      </td>
+                    </>
+                  )}
                 </tr>
               ))}
             </tbody>

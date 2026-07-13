@@ -4,6 +4,7 @@ import api from '../services/api';
 export default function Produits() {
   const [produits, setProduits] = useState([]);
   const [nouveauProduit, setNouveauProduit] = useState({ nom: '', reference: '', prix: '', quantite_stock: '' });
+  const [produitEnEdition, setProduitEnEdition] = useState(null);
   const [erreur, setErreur] = useState('');
 
   const charger = async () => {
@@ -34,6 +35,34 @@ export default function Produits() {
     }
   };
 
+  const demarrerEdition = (produit) => setProduitEnEdition({ ...produit });
+  const annulerEdition = () => setProduitEnEdition(null);
+  const handleChangeEdition = (e) => setProduitEnEdition({ ...produitEnEdition, [e.target.name]: e.target.value });
+
+  const sauvegarderEdition = async () => {
+    try {
+      await api.put(`/produits/${produitEnEdition.id}`, {
+        ...produitEnEdition,
+        prix: parseFloat(produitEnEdition.prix),
+        quantite_stock: parseInt(produitEnEdition.quantite_stock),
+      });
+      setProduitEnEdition(null);
+      charger();
+    } catch (err) {
+      setErreur('Erreur lors de la modification.');
+    }
+  };
+
+  const supprimerProduit = async (id) => {
+    if (!window.confirm('Supprimer ce produit ?')) return;
+    try {
+      await api.delete(`/produits/${id}`);
+      charger();
+    } catch (err) {
+      setErreur('Erreur lors de la suppression.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto">
@@ -57,15 +86,40 @@ export default function Produits() {
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <table className="w-full text-left">
             <thead className="bg-gray-100 text-gray-600 text-sm">
-              <tr><th className="p-3">Nom</th><th className="p-3">Référence</th><th className="p-3">Prix</th><th className="p-3">Stock</th></tr>
+              <tr>
+                <th className="p-3">Nom</th>
+                <th className="p-3">Référence</th>
+                <th className="p-3">Prix</th>
+                <th className="p-3">Stock</th>
+                <th className="p-3">Actions</th>
+              </tr>
             </thead>
             <tbody>
               {produits.map((p) => (
                 <tr key={p.id} className="border-t border-gray-100">
-                  <td className="p-3">{p.nom}</td>
-                  <td className="p-3">{p.reference}</td>
-                  <td className="p-3">{p.prix} DT</td>
-                  <td className="p-3">{p.quantite_stock}</td>
+                  {produitEnEdition?.id === p.id ? (
+                    <>
+                      <td className="p-2"><input name="nom" value={produitEnEdition.nom} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
+                      <td className="p-2"><input name="reference" value={produitEnEdition.reference || ''} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
+                      <td className="p-2"><input name="prix" type="number" step="0.01" value={produitEnEdition.prix} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
+                      <td className="p-2"><input name="quantite_stock" type="number" value={produitEnEdition.quantite_stock} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
+                      <td className="p-3 flex gap-2">
+                        <button onClick={sauvegarderEdition} className="text-green-600 text-sm font-medium hover:underline">Enregistrer</button>
+                        <button onClick={annulerEdition} className="text-gray-500 text-sm font-medium hover:underline">Annuler</button>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="p-3">{p.nom}</td>
+                      <td className="p-3">{p.reference}</td>
+                      <td className="p-3">{p.prix} DT</td>
+                      <td className="p-3">{p.quantite_stock}</td>
+                      <td className="p-3 flex gap-3">
+                        <button onClick={() => demarrerEdition(p)} className="text-blue-600 text-sm font-medium hover:underline">Modifier</button>
+                        <button onClick={() => supprimerProduit(p.id)} className="text-red-600 text-sm font-medium hover:underline">Supprimer</button>
+                      </td>
+                    </>
+                  )}
                 </tr>
               ))}
             </tbody>

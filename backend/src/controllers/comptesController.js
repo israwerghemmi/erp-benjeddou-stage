@@ -4,22 +4,23 @@ const { provisionTenant } = require('../config/tenantManager');
 
 exports.inscription = async (req, res) => {
   try {
-    const { nom_entreprise, email, telephone, type_compte, nom_utilisateur, mot_de_passe } = req.body;
+    const { nom_entreprise, email, telephone, type_compte, nom_utilisateur, mot_de_passe, type_abonnement } = req.body;
 
     const compteExistant = await Compte.findOne({ where: { email } });
     if (compteExistant) {
       return res.status(400).json({ message: 'Un compte existe déjà avec cet email.' });
     }
 
+    const estEssai = type_abonnement !== 'direct'; // par défaut : essai
+
     const compte = await Compte.create({
       nom_entreprise, email, telephone,
       type_compte: type_compte || 'entreprise',
       statut: 'en_attente',
-      abonnement: 'trial',
-      trial_utilisations_restantes: 30,
+      abonnement: estEssai ? 'trial' : 'mensuel',
+      trial_utilisations_restantes: estEssai ? 30 : null,
     });
 
-    // Génération d'un nom de base unique et sûr (sans tirets)
     const dbName = `tenant_${compte.id.replace(/-/g, '')}`;
     compte.db_name = dbName;
     await compte.save();
@@ -32,10 +33,8 @@ exports.inscription = async (req, res) => {
       compte_id: compte.id,
     });
 
-    // Création physique de la base dédiée + tables tenant
     const { models: tenantModels } = await provisionTenant(dbName);
 
-    // Initialisation : département par défaut + rôle admin avec toutes les permissions
     const departement = await tenantModels.Departement.create({ nom: 'Direction Générale' });
     const role = await tenantModels.Role.create({
       nom: 'Administrateur',
@@ -48,12 +47,48 @@ exports.inscription = async (req, res) => {
     });
 
     return res.status(201).json({
-      message: 'Inscription réussie. Environnement dédié créé. Compte en attente de validation.',
-      compte: { id: compte.id, nom_entreprise: compte.nom_entreprise, statut: compte.statut, db_name: dbName },
+      message: estEssai
+        ? 'Inscription réussie. Vous démarrez avec une période d\'essai de 30 connexions.'
+        : 'Inscription réussie. Votre compte est en attente de validation pour l\'abonnement.',
+      compte: {
+        id: compte.id, nom_entreprise: compte.nom_entreprise,
+        statut: compte.statut, abonnement: compte.abonnement,
+        trial_utilisations_restantes: compte.trial_utilisations_restantes,
+      },
       utilisateur: { id: utilisateur.id, nom: utilisateur.nom, email: utilisateur.email },
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Erreur lors de l\'inscription.', error: error.message });
+  }
+};
+
+exports.listerEnAttente = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin_plateforme') {
+      return res.status(403).json({ message: 'Accès réservé à l\'administrateur plateforme.' });
+    }
+    const comptes = await Compte.findAll({ where: { statut: 'en_attente' } });
+    res.json(comptes);
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur.', error: error.message });
+  }
+};
+
+exports.valider = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin_plateforme') {
+      return res.status(403).json({ message: 'Accès réservé à l\'administrateur plateforme.' });
+    }
+    const compte = await Compte.findByPk(req.params.id);
+    if (!compte) return res.status(404).json({ message: 'Compte introuvable.' });
+
+    compte.statut = 'actif';
+    compte.date_activation = new Date();
+    await compte.save();
+
+    res.json({ message: 'Compte validé et activé.', compte });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la validation.', error: error.message });
   }
 };

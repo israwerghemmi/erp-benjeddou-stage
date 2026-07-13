@@ -7,7 +7,9 @@ import Commandes from './pages/Commandes';
 import Produits from './pages/Produits';
 import Devis from './pages/Devis';
 import Dashboard from './pages/Dashboard';
-
+import RouteProtegee from './components/RouteProtegee';
+import ComptesEnAttente from './pages/ComptesEnAttente';
+import Finances from './pages/Finances';
 
 function App() {
   return (
@@ -16,12 +18,14 @@ function App() {
         <Route path="/" element={<Navigate to="/connexion" />} />
         <Route path="/inscription" element={<Inscription />} />
         <Route path="/connexion" element={<Connexion />} />
-        <Route path="/clients" element={<Clients />} />
-        <Route path="/fournisseurs" element={<Fournisseurs />} />
-        <Route path="/commandes" element={<Commandes />} />
-        <Route path="/devis" element={<Devis />} />
-        <Route path="/produits" element={<Produits />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/clients" element={<RouteProtegee><Clients /></RouteProtegee>} />
+        <Route path="/produits" element={<RouteProtegee><Produits /></RouteProtegee>} />
+        <Route path="/fournisseurs" element={<RouteProtegee><Fournisseurs /></RouteProtegee>} />
+        <Route path="/devis" element={<RouteProtegee><Devis /></RouteProtegee>} />
+        <Route path="/commandes" element={<RouteProtegee><Commandes /></RouteProtegee>} />
+        <Route path="/dashboard" element={<RouteProtegee><Dashboard /></RouteProtegee>} />
+        <Route path="/comptes-en-attente" element={<RouteProtegee><ComptesEnAttente /></RouteProtegee>} />
+        <Route path="/finances" element={<RouteProtegee><Finances /></RouteProtegee>} />
       </Routes>
     </BrowserRouter>
   );

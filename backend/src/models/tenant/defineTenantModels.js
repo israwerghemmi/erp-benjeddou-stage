@@ -58,6 +58,30 @@ module.exports = function defineTenantModels(sequelize) {
     statut: { type: DataTypes.ENUM('en_cours', 'livree', 'annulee'), defaultValue: 'en_cours' },
     montant_total: { type: DataTypes.FLOAT, defaultValue: 0 },
   }, { tableName: 'commandes', timestamps: true });
+  const Paiement = sequelize.define('Paiement', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    reference: { type: DataTypes.STRING, allowNull: false },
+    montant: { type: DataTypes.FLOAT, allowNull: false },
+    mode_paiement: { type: DataTypes.ENUM('especes', 'cheque', 'virement', 'carte'), defaultValue: 'especes' },
+    date_paiement: { type: DataTypes.DATEONLY, defaultValue: DataTypes.NOW },
+    commande_id: { type: DataTypes.UUID, allowNull: true },
+  }, { tableName: 'paiements', timestamps: true });
+  
+  const Depense = sequelize.define('Depense', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    libelle: { type: DataTypes.STRING, allowNull: false },
+    montant: { type: DataTypes.FLOAT, allowNull: false },
+    categorie: { type: DataTypes.STRING },
+    date_depense: { type: DataTypes.DATEONLY, defaultValue: DataTypes.NOW },
+  }, { tableName: 'depenses', timestamps: true });
+  
+  const Recette = sequelize.define('Recette', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    libelle: { type: DataTypes.STRING, allowNull: false },
+    montant: { type: DataTypes.FLOAT, allowNull: false },
+    categorie: { type: DataTypes.STRING },
+    date_recette: { type: DataTypes.DATEONLY, defaultValue: DataTypes.NOW },
+  }, { tableName: 'recettes', timestamps: true });
 
   Departement.hasMany(UtilisateurProfil, { foreignKey: 'departement_id' });
   UtilisateurProfil.belongsTo(Departement, { foreignKey: 'departement_id' });
@@ -80,5 +104,8 @@ module.exports = function defineTenantModels(sequelize) {
   Commande.belongsToMany(Produit, { through: 'commande_produit', foreignKey: 'commande_id' });
   Produit.belongsToMany(Commande, { through: 'commande_produit', foreignKey: 'produit_id' });
 
-  return { Departement, Role, UtilisateurProfil, ClientCommercial, Fournisseur, Produit, Devis, Commande };
+  Commande.hasMany(Paiement, { foreignKey: 'commande_id' });
+  Paiement.belongsTo(Commande, { foreignKey: 'commande_id' });
+
+  return { Departement, Role, UtilisateurProfil, ClientCommercial, Fournisseur, Produit, Devis, Commande, Paiement, Depense, Recette };
 };

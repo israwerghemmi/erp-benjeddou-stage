@@ -20,20 +20,42 @@ exports.login = async (req, res) => {
       return res.status(403).json({ message: 'Votre compte a été refusé. Contactez le support.' });
     }
 
-    // Mise à jour de la traçabilité de connexion
+    let messageTrial = null;
+
+    if (utilisateur.Compte.abonnement === 'trial') {
+      if (utilisateur.Compte.statut === 'expire' || utilisateur.Compte.trial_utilisations_restantes <= 0) {
+        utilisateur.Compte.statut = 'expire';
+        await utilisateur.Compte.save();
+        return res.status(403).json({
+          message: 'Votre période d\'essai est terminée (30 connexions atteintes). Veuillez souscrire à un abonnement pour continuer. Vos données restent conservées et exportables.',
+          statut: 'expire',
+          compte_id: utilisateur.compte_id,
+        });
+      }
+      utilisateur.Compte.trial_utilisations_restantes -= 1;
+      await utilisateur.Compte.save();
+      messageTrial = `Il vous reste ${utilisateur.Compte.trial_utilisations_restantes} utilisation(s) avant expiration de votre période d'essai.`;
+    }
+
     utilisateur.derniere_connexion = new Date();
     await utilisateur.save();
 
     const token = jwt.sign(
-        { utilisateur_id: utilisateur.id, compte_id: utilisateur.compte_id, db_name: utilisateur.Compte.db_name, role: utilisateur.role },
-        process.env.JWT_SECRET,
-        { expiresIn: '24h' }
-      );
+      { utilisateur_id: utilisateur.id, compte_id: utilisateur.compte_id, db_name: utilisateur.Compte.db_name, role: utilisateur.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
     return res.json({
       message: 'Connexion réussie.',
+      messageTrial,
       token,
       utilisateur: { id: utilisateur.id, nom: utilisateur.nom, email: utilisateur.email, role: utilisateur.role },
-      compte: { id: utilisateur.Compte.id, nom_entreprise: utilisateur.Compte.nom_entreprise, statut: utilisateur.Compte.statut },
+      compte: {
+        id: utilisateur.Compte.id, nom_entreprise: utilisateur.Compte.nom_entreprise,
+        statut: utilisateur.Compte.statut, abonnement: utilisateur.Compte.abonnement,
+        trial_utilisations_restantes: utilisateur.Compte.trial_utilisations_restantes,
+      },
     });
   } catch (error) {
     console.error(error);
