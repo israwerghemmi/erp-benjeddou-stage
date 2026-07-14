@@ -31,12 +31,8 @@ export default function Clients() {
     }
   };
 
-  const demarrerEdition = (client) => {
-    setClientEnEdition({ ...client });
-  };
-
+  const demarrerEdition = (client) => setClientEnEdition({ ...client });
   const annulerEdition = () => setClientEnEdition(null);
-
   const handleChangeEdition = (e) => setClientEnEdition({ ...clientEnEdition, [e.target.name]: e.target.value });
 
   const sauvegarderEdition = async () => {
@@ -60,60 +56,67 @@ export default function Clients() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Mes Clients</h1>
+    <div className="erp-page">
+      <div className="erp-container erp-container-md">
+        <header className="erp-page-header">
+          <h1>Mes Clients</h1>
+          <p>Gérez votre portefeuille clients</p>
+        </header>
 
-        {erreur && <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-4">{erreur}</div>}
+        {erreur && <div className="erp-alert erp-alert-error">{erreur}</div>}
 
-        <form onSubmit={handleAjouter} className="bg-white p-6 rounded-xl shadow-md mb-6 grid grid-cols-2 gap-4">
+        <form onSubmit={handleAjouter} className="erp-card erp-card-padded erp-form-grid" style={{ marginBottom: '1.5rem' }}>
           <input name="nom" value={nouveauClient.nom} placeholder="Nom" onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2" required />
+            className="erp-input" required />
           <input name="email" value={nouveauClient.email} placeholder="Email" onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2" />
+            className="erp-input" />
           <input name="telephone" value={nouveauClient.telephone} placeholder="Téléphone" onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2" />
+            className="erp-input" />
           <input name="adresse" value={nouveauClient.adresse} placeholder="Adresse" onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2" />
-          <button type="submit" className="col-span-2 bg-blue-600 text-white rounded-lg p-2 font-medium hover:bg-blue-700 transition">
+            className="erp-input" />
+          <button type="submit" className="erp-btn erp-btn-primary" style={{ gridColumn: '1 / -1' }}>
             Ajouter le client
           </button>
         </form>
 
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-gray-100 text-gray-600 text-sm">
+        <div className="erp-table-wrap">
+          <table className="erp-table">
+            <thead>
               <tr>
-                <th className="p-3">Nom</th>
-                <th className="p-3">Email</th>
-                <th className="p-3">Téléphone</th>
-                <th className="p-3">Adresse</th>
-                <th className="p-3">Actions</th>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Adresse</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {clients.map((c) => (
-                <tr key={c.id} className="border-t border-gray-100">
+                <tr key={c.id}>
                   {clientEnEdition?.id === c.id ? (
                     <>
-                      <td className="p-2"><input name="nom" value={clientEnEdition.nom} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
-                      <td className="p-2"><input name="email" value={clientEnEdition.email || ''} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
-                      <td className="p-2"><input name="telephone" value={clientEnEdition.telephone || ''} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
-                      <td className="p-2"><input name="adresse" value={clientEnEdition.adresse || ''} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
-                      <td className="p-3 flex gap-2">
-                        <button onClick={sauvegarderEdition} className="text-green-600 text-sm font-medium hover:underline">Enregistrer</button>
-                        <button onClick={annulerEdition} className="text-gray-500 text-sm font-medium hover:underline">Annuler</button>
+                      <td><input name="nom" value={clientEnEdition.nom} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
+                      <td><input name="email" value={clientEnEdition.email || ''} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
+                      <td><input name="telephone" value={clientEnEdition.telephone || ''} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
+                      <td><input name="adresse" value={clientEnEdition.adresse || ''} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
+                      <td>
+                        <div className="erp-table-actions">
+                          <button onClick={sauvegarderEdition} className="erp-btn-link erp-btn-link-success">Enregistrer</button>
+                          <button onClick={annulerEdition} className="erp-btn-link erp-btn-link-muted">Annuler</button>
+                        </div>
                       </td>
                     </>
                   ) : (
                     <>
-                      <td className="p-3">{c.nom}</td>
-                      <td className="p-3">{c.email}</td>
-                      <td className="p-3">{c.telephone}</td>
-                      <td className="p-3">{c.adresse}</td>
-                      <td className="p-3 flex gap-3">
-                        <button onClick={() => demarrerEdition(c)} className="text-blue-600 text-sm font-medium hover:underline">Modifier</button>
-                        <button onClick={() => supprimerClient(c.id)} className="text-red-600 text-sm font-medium hover:underline">Supprimer</button>
+                      <td>{c.nom}</td>
+                      <td>{c.email}</td>
+                      <td>{c.telephone}</td>
+                      <td>{c.adresse}</td>
+                      <td>
+                        <div className="erp-table-actions">
+                          <button onClick={() => demarrerEdition(c)} className="erp-btn-link erp-btn-link-primary">Modifier</button>
+                          <button onClick={() => supprimerClient(c.id)} className="erp-btn-link erp-btn-link-danger">Supprimer</button>
+                        </div>
                       </td>
                     </>
                   )}

@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 
+const statutBadge = (statut) => {
+  if (statut === 'accepte') return 'erp-badge erp-badge-success';
+  if (statut === 'refuse') return 'erp-badge erp-badge-danger';
+  return 'erp-badge erp-badge-warning';
+};
+
 export default function Devis() {
   const [devisListe, setDevisListe] = useState([]);
   const [clients, setClients] = useState([]);
@@ -37,43 +43,52 @@ export default function Devis() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Devis</h1>
-        {erreur && <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-4">{erreur}</div>}
+    <div className="erp-page">
+      <div className="erp-container erp-container-md">
+        <header className="erp-page-header">
+          <h1>Devis</h1>
+          <p>Créez et suivez vos propositions commerciales</p>
+        </header>
 
-        <form onSubmit={handleCreer} className="bg-white p-6 rounded-xl shadow-md mb-6 grid grid-cols-2 gap-4">
+        {erreur && <div className="erp-alert erp-alert-error">{erreur}</div>}
+
+        <form onSubmit={handleCreer} className="erp-card erp-card-padded erp-form-grid" style={{ marginBottom: '1.5rem' }}>
           <input name="numero" value={form.numero} placeholder="Numéro (ex: DEV-001)" onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2" required />
-          <select name="client_id" value={form.client_id} onChange={handleChange} className="border border-gray-300 rounded-lg p-2" required>
+            className="erp-input" required />
+          <select name="client_id" value={form.client_id} onChange={handleChange} className="erp-select" required>
             <option value="">Choisir un client</option>
             {clients.map((c) => <option key={c.id} value={c.id}>{c.nom}</option>)}
           </select>
-          <select name="produit_id" value={form.produit_id} onChange={handleChange} className="border border-gray-300 rounded-lg p-2" required>
+          <select name="produit_id" value={form.produit_id} onChange={handleChange} className="erp-select" required>
             <option value="">Choisir un produit</option>
             {produits.map((p) => <option key={p.id} value={p.id}>{p.nom} ({p.prix} DT)</option>)}
           </select>
           <input name="quantite" type="number" value={form.quantite} placeholder="Quantité" onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2" required />
+            className="erp-input" required />
           <input name="prix_unitaire" type="number" step="0.01" value={form.prix_unitaire} placeholder="Prix unitaire" onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2 col-span-2" required />
-          <button type="submit" className="col-span-2 bg-blue-600 text-white rounded-lg p-2 font-medium hover:bg-blue-700 transition">
+            className="erp-input" style={{ gridColumn: '1 / -1' }} required />
+          <button type="submit" className="erp-btn erp-btn-primary" style={{ gridColumn: '1 / -1' }}>
             Créer le devis
           </button>
         </form>
 
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-gray-100 text-gray-600 text-sm">
-              <tr><th className="p-3">Numéro</th><th className="p-3">Client</th><th className="p-3">Statut</th><th className="p-3">Montant</th></tr>
+        <div className="erp-table-wrap">
+          <table className="erp-table">
+            <thead>
+              <tr>
+                <th>Numéro</th>
+                <th>Client</th>
+                <th>Statut</th>
+                <th>Montant</th>
+              </tr>
             </thead>
             <tbody>
               {devisListe.map((d) => (
-                <tr key={d.id} className="border-t border-gray-100">
-                  <td className="p-3">{d.numero}</td>
-                  <td className="p-3">{d.ClientCommercial?.nom || '-'}</td>
-                  <td className="p-3">{d.statut}</td>
-                  <td className="p-3">{d.montant_total} DT</td>
+                <tr key={d.id}>
+                  <td>{d.numero}</td>
+                  <td>{d.ClientCommercial?.nom || '-'}</td>
+                  <td><span className={statutBadge(d.statut)}>{d.statut}</span></td>
+                  <td>{d.montant_total} DT</td>
                 </tr>
               ))}
             </tbody>

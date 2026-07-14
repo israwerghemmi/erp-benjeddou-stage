@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { sequelize } = require('./models');
+const { clearTenantCache } = require('./config/tenantManager');
 
 const app = express();
 app.use(cors());
@@ -21,6 +22,8 @@ const depensesRoutes = require('./routes/depensesRoutes');
 const recettesRoutes = require('./routes/recettesRoutes');
 const rapportsFinanciersRoutes = require('./routes/rapportsFinanciersRoutes');
 const exportRoutes = require('./routes/exportRoutes');
+const facturesRoutes = require('./routes/facturesRoutes');
+app.use('/api/factures', facturesRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/paiements', paiementsRoutes);
 app.use('/api/depenses', depensesRoutes);
@@ -41,6 +44,7 @@ app.get('/api/health', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
+clearTenantCache();
 
 sequelize.sync({ alter: true })
   .then(() => {

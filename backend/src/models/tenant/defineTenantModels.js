@@ -83,6 +83,15 @@ module.exports = function defineTenantModels(sequelize) {
     date_recette: { type: DataTypes.DATEONLY, defaultValue: DataTypes.NOW },
   }, { tableName: 'recettes', timestamps: true });
 
+  const Facture = sequelize.define('Facture', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    numero: { type: DataTypes.STRING, allowNull: false, unique: true },
+    commande_id: { type: DataTypes.UUID, allowNull: false },
+    date_emission: { type: DataTypes.DATEONLY, defaultValue: DataTypes.NOW },
+    montant_ttc: { type: DataTypes.FLOAT, allowNull: false },
+    statut: { type: DataTypes.ENUM('emise', 'payee', 'annulee'), defaultValue: 'emise' },
+  }, { tableName: 'factures', timestamps: true });
+
   Departement.hasMany(UtilisateurProfil, { foreignKey: 'departement_id' });
   UtilisateurProfil.belongsTo(Departement, { foreignKey: 'departement_id' });
 
@@ -107,5 +116,9 @@ module.exports = function defineTenantModels(sequelize) {
   Commande.hasMany(Paiement, { foreignKey: 'commande_id' });
   Paiement.belongsTo(Commande, { foreignKey: 'commande_id' });
 
-  return { Departement, Role, UtilisateurProfil, ClientCommercial, Fournisseur, Produit, Devis, Commande, Paiement, Depense, Recette };
+  Commande.hasOne(Facture, { foreignKey: 'commande_id' });
+  Facture.belongsTo(Commande, { foreignKey: 'commande_id' });
+  
+
+  return { Departement, Role, UtilisateurProfil, ClientCommercial, Fournisseur, Produit, Devis, Commande, Paiement, Depense, Recette ,Facture};
 };

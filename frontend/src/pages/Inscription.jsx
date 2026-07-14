@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 export default function Inscription() {
@@ -25,32 +25,46 @@ export default function Inscription() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-md w-full max-w-md space-y-4">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Créer votre compte entreprise</h1>
+    <div className="erp-auth">
+      <div className="erp-auth-brand">
+        <div className="erp-auth-brand-content">
+          <h1>
+            Lancez votre <span className="erp-auth-brand-accent">ERP</span> en quelques minutes
+          </h1>
+          <p>
+            Créez votre compte entreprise et commencez à gérer clients, stocks et facturation dès aujourd'hui.
+          </p>
+        </div>
+      </div>
 
-        {erreur && <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm">{erreur}</div>}
-        {succes && <div className="bg-green-100 text-green-700 p-3 rounded-lg text-sm">{succes}</div>}
+      <div className="erp-auth-form-panel">
+        <form onSubmit={handleSubmit} className="erp-auth-form erp-form">
+          <h2>Créer un compte</h2>
+          <p className="erp-auth-form-subtitle">Inscription entreprise</p>
 
-        <input name="nom_entreprise" placeholder="Nom de l'entreprise" onChange={handleChange}
-          className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-        <input name="email" type="email" placeholder="Email" onChange={handleChange}
-          className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-        <input name="telephone" placeholder="Téléphone" onChange={handleChange}
-          className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <input name="nom_utilisateur" placeholder="Votre nom" onChange={handleChange}
-          className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-        <input name="mot_de_passe" type="password" placeholder="Mot de passe" onChange={handleChange}
-          className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+          {erreur && <div className="erp-alert erp-alert-error">{erreur}</div>}
+          {succes && <div className="erp-alert erp-alert-success">{succes}</div>}
 
-        <button type="submit" className="w-full bg-blue-600 text-white rounded-lg p-3 font-medium hover:bg-blue-700 transition">
-          S'inscrire
-        </button>
+          <input name="nom_entreprise" placeholder="Nom de l'entreprise" onChange={handleChange}
+            className="erp-input" required />
+          <input name="email" type="email" placeholder="Email" onChange={handleChange}
+            className="erp-input" required />
+          <input name="telephone" placeholder="Téléphone" onChange={handleChange}
+            className="erp-input" />
+          <input name="nom_utilisateur" placeholder="Votre nom" onChange={handleChange}
+            className="erp-input" required />
+          <input name="mot_de_passe" type="password" placeholder="Mot de passe" onChange={handleChange}
+            className="erp-input" required />
 
-        <p className="text-center text-sm text-gray-500">
-          Déjà un compte ? <a href="/connexion" className="text-blue-600 hover:underline">Se connecter</a>
-        </p>
-      </form>
+          <button type="submit" className="erp-btn erp-btn-accent erp-btn-full">
+            S'inscrire
+          </button>
+
+          <p className="erp-auth-footer">
+            Déjà un compte ? <Link to="/connexion">Se connecter</Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }

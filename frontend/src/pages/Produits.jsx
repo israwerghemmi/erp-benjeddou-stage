@@ -64,59 +64,67 @@ export default function Produits() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Mes Produits</h1>
-        {erreur && <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-4">{erreur}</div>}
+    <div className="erp-page">
+      <div className="erp-container erp-container-md">
+        <header className="erp-page-header">
+          <h1>Mes Produits</h1>
+          <p>Catalogue et gestion des stocks</p>
+        </header>
 
-        <form onSubmit={handleAjouter} className="bg-white p-6 rounded-xl shadow-md mb-6 grid grid-cols-2 gap-4">
+        {erreur && <div className="erp-alert erp-alert-error">{erreur}</div>}
+
+        <form onSubmit={handleAjouter} className="erp-card erp-card-padded erp-form-grid" style={{ marginBottom: '1.5rem' }}>
           <input name="nom" value={nouveauProduit.nom} placeholder="Nom du produit" onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2" required />
+            className="erp-input" required />
           <input name="reference" value={nouveauProduit.reference} placeholder="Référence" onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2" />
+            className="erp-input" />
           <input name="prix" type="number" step="0.01" value={nouveauProduit.prix} placeholder="Prix" onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2" required />
+            className="erp-input" required />
           <input name="quantite_stock" type="number" value={nouveauProduit.quantite_stock} placeholder="Quantité en stock" onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2" />
-          <button type="submit" className="col-span-2 bg-blue-600 text-white rounded-lg p-2 font-medium hover:bg-blue-700 transition">
+            className="erp-input" />
+          <button type="submit" className="erp-btn erp-btn-primary" style={{ gridColumn: '1 / -1' }}>
             Ajouter le produit
           </button>
         </form>
 
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-gray-100 text-gray-600 text-sm">
+        <div className="erp-table-wrap">
+          <table className="erp-table">
+            <thead>
               <tr>
-                <th className="p-3">Nom</th>
-                <th className="p-3">Référence</th>
-                <th className="p-3">Prix</th>
-                <th className="p-3">Stock</th>
-                <th className="p-3">Actions</th>
+                <th>Nom</th>
+                <th>Référence</th>
+                <th>Prix</th>
+                <th>Stock</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {produits.map((p) => (
-                <tr key={p.id} className="border-t border-gray-100">
+                <tr key={p.id}>
                   {produitEnEdition?.id === p.id ? (
                     <>
-                      <td className="p-2"><input name="nom" value={produitEnEdition.nom} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
-                      <td className="p-2"><input name="reference" value={produitEnEdition.reference || ''} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
-                      <td className="p-2"><input name="prix" type="number" step="0.01" value={produitEnEdition.prix} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
-                      <td className="p-2"><input name="quantite_stock" type="number" value={produitEnEdition.quantite_stock} onChange={handleChangeEdition} className="border border-gray-300 rounded p-1 w-full" /></td>
-                      <td className="p-3 flex gap-2">
-                        <button onClick={sauvegarderEdition} className="text-green-600 text-sm font-medium hover:underline">Enregistrer</button>
-                        <button onClick={annulerEdition} className="text-gray-500 text-sm font-medium hover:underline">Annuler</button>
+                      <td><input name="nom" value={produitEnEdition.nom} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
+                      <td><input name="reference" value={produitEnEdition.reference || ''} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
+                      <td><input name="prix" type="number" step="0.01" value={produitEnEdition.prix} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
+                      <td><input name="quantite_stock" type="number" value={produitEnEdition.quantite_stock} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
+                      <td>
+                        <div className="erp-table-actions">
+                          <button onClick={sauvegarderEdition} className="erp-btn-link erp-btn-link-success">Enregistrer</button>
+                          <button onClick={annulerEdition} className="erp-btn-link erp-btn-link-muted">Annuler</button>
+                        </div>
                       </td>
                     </>
                   ) : (
                     <>
-                      <td className="p-3">{p.nom}</td>
-                      <td className="p-3">{p.reference}</td>
-                      <td className="p-3">{p.prix} DT</td>
-                      <td className="p-3">{p.quantite_stock}</td>
-                      <td className="p-3 flex gap-3">
-                        <button onClick={() => demarrerEdition(p)} className="text-blue-600 text-sm font-medium hover:underline">Modifier</button>
-                        <button onClick={() => supprimerProduit(p.id)} className="text-red-600 text-sm font-medium hover:underline">Supprimer</button>
+                      <td>{p.nom}</td>
+                      <td>{p.reference}</td>
+                      <td>{p.prix} DT</td>
+                      <td>{p.quantite_stock}</td>
+                      <td>
+                        <div className="erp-table-actions">
+                          <button onClick={() => demarrerEdition(p)} className="erp-btn-link erp-btn-link-primary">Modifier</button>
+                          <button onClick={() => supprimerProduit(p.id)} className="erp-btn-link erp-btn-link-danger">Supprimer</button>
+                        </div>
                       </td>
                     </>
                   )}

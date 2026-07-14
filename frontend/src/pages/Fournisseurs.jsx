@@ -31,39 +31,42 @@ export default function Fournisseurs() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Mes Fournisseurs</h1>
+    <div className="erp-page">
+      <div className="erp-container erp-container-md">
+        <header className="erp-page-header">
+          <h1>Mes Fournisseurs</h1>
+          <p>Vos partenaires et contacts fournisseurs</p>
+        </header>
 
-        {erreur && <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-4">{erreur}</div>}
+        {erreur && <div className="erp-alert erp-alert-error">{erreur}</div>}
 
-        <form onSubmit={handleAjouter} className="bg-white p-6 rounded-xl shadow-md mb-6 grid grid-cols-2 gap-4">
+        <form onSubmit={handleAjouter} className="erp-card erp-card-padded erp-form-grid" style={{ marginBottom: '1.5rem' }}>
           <input name="nom" value={nouveauFournisseur.nom} placeholder="Nom du fournisseur" onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2" required />
+            className="erp-input" required />
           <input name="email" value={nouveauFournisseur.email} placeholder="Email" onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2" />
+            className="erp-input" />
           <input name="telephone" value={nouveauFournisseur.telephone} placeholder="Téléphone" onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2 col-span-2" />
-          <button type="submit" className="col-span-2 bg-blue-600 text-white rounded-lg p-2 font-medium hover:bg-blue-700 transition">
+            className="erp-input" style={{ gridColumn: '1 / -1' }} />
+          <button type="submit" className="erp-btn erp-btn-primary" style={{ gridColumn: '1 / -1' }}>
             Ajouter le fournisseur
           </button>
         </form>
 
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-gray-100 text-gray-600 text-sm">
+        <div className="erp-table-wrap">
+          <table className="erp-table">
+            <thead>
               <tr>
-                <th className="p-3">Nom</th>
-                <th className="p-3">Email</th>
-                <th className="p-3">Téléphone</th>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Téléphone</th>
               </tr>
             </thead>
             <tbody>
               {fournisseurs.map((f) => (
-                <tr key={f.id} className="border-t border-gray-100">
-                  <td className="p-3">{f.nom}</td>
-                  <td className="p-3">{f.email}</td>
-                  <td className="p-3">{f.telephone}</td>
+                <tr key={f.id}>
+                  <td>{f.nom}</td>
+                  <td>{f.email}</td>
+                  <td>{f.telephone}</td>
                 </tr>
               ))}
             </tbody>

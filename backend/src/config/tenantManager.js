@@ -47,5 +47,9 @@ async function provisionTenant(dbName) {
   await createTenantDatabase(dbName);
   return getTenantConnection(dbName);
 }
+function clearTenantCache() {
+  tenantConnections.clear();
+  console.log('🔄 Cache des connexions tenant vidé.');
+}
 
-module.exports = { getTenantConnection, provisionTenant };
+module.exports = { getTenantConnection, provisionTenant, clearTenantCache };

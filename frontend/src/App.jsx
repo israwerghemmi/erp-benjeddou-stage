@@ -10,7 +10,7 @@ import Dashboard from './pages/Dashboard';
 import RouteProtegee from './components/RouteProtegee';
 import ComptesEnAttente from './pages/ComptesEnAttente';
 import Finances from './pages/Finances';
-
+import Factures from './pages/Factures';
 function App() {
   return (
     <BrowserRouter>
@@ -26,6 +26,7 @@ function App() {
         <Route path="/dashboard" element={<RouteProtegee><Dashboard /></RouteProtegee>} />
         <Route path="/comptes-en-attente" element={<RouteProtegee><ComptesEnAttente /></RouteProtegee>} />
         <Route path="/finances" element={<RouteProtegee><Finances /></RouteProtegee>} />
+        <Route path="/factures" element={<RouteProtegee><Factures /></RouteProtegee>} />
       </Routes>
     </BrowserRouter>
   );

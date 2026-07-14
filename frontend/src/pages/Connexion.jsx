@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 export default function Connexion() {
@@ -24,25 +24,39 @@ export default function Connexion() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-md w-full max-w-md space-y-4">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Connexion</h1>
+    <div className="erp-auth">
+      <div className="erp-auth-brand">
+        <div className="erp-auth-brand-content">
+          <h1>
+            Pilotez votre <span className="erp-auth-brand-accent">entreprise</span> avec clarté
+          </h1>
+          <p>
+            Clients, commandes, finances et factures — tout centralisé dans un espace de travail pensé pour les équipes tunisiennes.
+          </p>
+        </div>
+      </div>
 
-        {erreur && <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm">{erreur}</div>}
+      <div className="erp-auth-form-panel">
+        <form onSubmit={handleSubmit} className="erp-auth-form erp-form">
+          <h2>Connexion</h2>
+          <p className="erp-auth-form-subtitle">Accédez à votre espace de gestion</p>
 
-        <input name="email" type="email" placeholder="Email" onChange={handleChange}
-          className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-        <input name="mot_de_passe" type="password" placeholder="Mot de passe" onChange={handleChange}
-          className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+          {erreur && <div className="erp-alert erp-alert-error">{erreur}</div>}
 
-        <button type="submit" className="w-full bg-blue-600 text-white rounded-lg p-3 font-medium hover:bg-blue-700 transition">
-          Se connecter
-        </button>
+          <input name="email" type="email" placeholder="Email professionnel" onChange={handleChange}
+            className="erp-input" required />
+          <input name="mot_de_passe" type="password" placeholder="Mot de passe" onChange={handleChange}
+            className="erp-input" required />
 
-        <p className="text-center text-sm text-gray-500">
-          Pas encore de compte ? <a href="/inscription" className="text-blue-600 hover:underline">S'inscrire</a>
-        </p>
-      </form>
+          <button type="submit" className="erp-btn erp-btn-accent erp-btn-full">
+            Se connecter
+          </button>
+
+          <p className="erp-auth-footer">
+            Pas encore de compte ? <Link to="/inscription">S'inscrire</Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }
