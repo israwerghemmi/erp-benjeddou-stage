@@ -1,15 +1,22 @@
 const jwt = require('jsonwebtoken');
+const { Utilisateur } = require('../models');
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader || !authHeader.startsWith('Bearer')) {
     return res.status(401).json({ message: 'Token manquant.' });
   }
 
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.replace('Bearer', '').trim();
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // { utilisateur_id, compte_id, role }
+
+    const utilisateur = await Utilisateur.findByPk(decoded.utilisateur_id);
+    if (!utilisateur || utilisateur.session_token_actif !== token) {
+      return res.status(401).json({ message: 'Session invalidée : une connexion plus récente a été détectée ailleurs.' });
+    }
+
+    req.user = decoded;
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Token invalide ou expiré.' });

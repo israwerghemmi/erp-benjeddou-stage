@@ -55,6 +55,16 @@ export default function Commandes() {
     }
   };
 
+  const payerEnLigne = async (commandeId) => {
+    setErreur('');
+    try {
+      const res = await api.post(`/paiement-en-ligne/creer-session/${commandeId}`);
+      window.location.href = res.data.url;
+    } catch (err) {
+      setErreur(err.response?.data?.message || 'Erreur lors de la création de la session de paiement.');
+    }
+  };
+
   return (
     <div className="erp-page">
       <div className="erp-container erp-container-md">
@@ -93,7 +103,8 @@ export default function Commandes() {
                 <th>Client</th>
                 <th>Statut</th>
                 <th>Montant</th>
-                <th>Action</th>
+                <th>Statut</th>
+                <th>Paiement</th>
               </tr>
             </thead>
             <tbody>
@@ -113,6 +124,16 @@ export default function Commandes() {
                       <option value="livree">Livrée</option>
                       <option value="annulee">Annulée</option>
                     </select>
+                  </td>
+                  <td>
+                    {c.statut !== 'livree' && c.statut !== 'annulee' && (
+                      <button
+                        onClick={() => payerEnLigne(c.id)}
+                        className="erp-btn-link erp-btn-link-primary"
+                      >
+                        Payer en ligne
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

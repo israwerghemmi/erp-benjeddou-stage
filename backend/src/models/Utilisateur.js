@@ -2,6 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 
 const Utilisateur = sequelize.define('Utilisateur', {
+  session_token_actif: { type: DataTypes.TEXT, allowNull: true },
   id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
   compte_id: { type: DataTypes.UUID, allowNull: false },
   nom: { type: DataTypes.STRING, allowNull: false },
@@ -10,5 +11,6 @@ const Utilisateur = sequelize.define('Utilisateur', {
   role: { type: DataTypes.ENUM('admin_plateforme', 'admin_compte', 'utilisateur'), defaultValue: 'utilisateur' },
   derniere_connexion: { type: DataTypes.DATE, allowNull: true },
 }, { tableName: 'utilisateurs', timestamps: true });
+
 
 module.exports = Utilisateur;

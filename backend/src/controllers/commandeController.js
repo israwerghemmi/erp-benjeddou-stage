@@ -1,3 +1,4 @@
+const { journaliserAction } = require('../utils/journaliser');
 exports.creer = async (req, res) => {
     try {
       const { numero, client_id, produits } = req.body;
@@ -16,7 +17,7 @@ exports.creer = async (req, res) => {
       const commandeComplete = await req.tenantModels.Commande.findByPk(commande.id, {
         include: [req.tenantModels.Produit, req.tenantModels.ClientCommercial],
       });
-  
+      await journaliserAction(req, 'creation_commande', { commande_id: commande.id, numero: commande.numero });
       res.status(201).json(commandeComplete);
     } catch (error) {
       res.status(500).json({ message: 'Erreur lors de la création de la commande.', error: error.message });

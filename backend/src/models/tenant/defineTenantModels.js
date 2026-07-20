@@ -91,6 +91,24 @@ module.exports = function defineTenantModels(sequelize) {
     montant_ttc: { type: DataTypes.FLOAT, allowNull: false },
     statut: { type: DataTypes.ENUM('emise', 'payee', 'annulee'), defaultValue: 'emise' },
   }, { tableName: 'factures', timestamps: true });
+  const PaiementEnLigne = sequelize.define('PaiementEnLigne', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    session_id: { type: DataTypes.STRING, allowNull: false, unique: true },
+    commande_id: { type: DataTypes.UUID, allowNull: false },
+    montant: { type: DataTypes.FLOAT, allowNull: false },
+    statut: { type: DataTypes.ENUM('en_attente', 'reussi', 'echoue'), defaultValue: 'en_attente' },
+  }, { tableName: 'paiements_en_ligne', timestamps: true });
+  const JournalAudit = sequelize.define('JournalAudit', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    utilisateur_id: { type: DataTypes.UUID, allowNull: false },
+    utilisateur_nom: { type: DataTypes.STRING, allowNull: true },
+    action: { type: DataTypes.STRING, allowNull: false }, // ex: "connexion", "creation_client", "suppression_produit"
+    details: { type: DataTypes.JSONB, allowNull: true },
+    adresse_ip: { type: DataTypes.STRING, allowNull: true },
+  }, { tableName: 'journal_audit', timestamps: true });
+  
+  Commande.hasMany(PaiementEnLigne, { foreignKey: 'commande_id' });
+  PaiementEnLigne.belongsTo(Commande, { foreignKey: 'commande_id' });
 
   Departement.hasMany(UtilisateurProfil, { foreignKey: 'departement_id' });
   UtilisateurProfil.belongsTo(Departement, { foreignKey: 'departement_id' });
@@ -118,7 +136,8 @@ module.exports = function defineTenantModels(sequelize) {
 
   Commande.hasOne(Facture, { foreignKey: 'commande_id' });
   Facture.belongsTo(Commande, { foreignKey: 'commande_id' });
+
   
 
-  return { Departement, Role, UtilisateurProfil, ClientCommercial, Fournisseur, Produit, Devis, Commande, Paiement, Depense, Recette ,Facture};
+  return { Departement, Role, UtilisateurProfil, ClientCommercial, Fournisseur, Produit, Devis, Commande, Paiement, Depense, Recette ,Facture ,PaiementEnLigne,JournalAudit };
 };

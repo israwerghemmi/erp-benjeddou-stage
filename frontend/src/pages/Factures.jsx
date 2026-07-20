@@ -43,6 +43,21 @@ export default function Factures() {
     }
   };
 
+  const exporterExcel = async () => {
+    try {
+      const response = await api.get('/factures/export/excel', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'historique_factures.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      setErreur('Erreur lors de l\'export Excel.');
+    }
+  };
+
   const telechargerPdf = async (id, numero) => {
     try {
       const response = await api.get(`/factures/${id}/pdf`, { responseType: 'blob' });
@@ -90,6 +105,12 @@ export default function Factures() {
             Générer la facture
           </button>
         </form>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+          <button onClick={exporterExcel} className="erp-btn erp-btn-secondary">
+            Exporter en Excel
+          </button>
+        </div>
 
         <div className="erp-table-wrap">
           <table className="erp-table">

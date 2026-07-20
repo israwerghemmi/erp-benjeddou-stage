@@ -8,6 +8,7 @@ router.use(authMiddleware, tenantMiddleware);
 
 router.post('/generer/:commandeId', facturesController.genererDepuisCommande);
 router.get('/', facturesController.listerToutes);
+router.get('/export/excel', facturesController.exporterExcel);
 router.get('/:id/pdf', facturesController.telechargerPdf);
 router.delete('/:id', facturesController.supprimer);
 

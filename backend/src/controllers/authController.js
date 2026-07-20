@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Utilisateur, Compte } = require('../models');
+const { getTenantConnection } = require('../config/tenantManager');
+const journaliser = require('../utils/journaliser');
 
 exports.login = async (req, res) => {
   try {
@@ -45,6 +47,19 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
+    utilisateur.session_token_actif = token;
+    await utilisateur.save();
+    try {
+      const { models: tenantModels } = await getTenantConnection(utilisateur.Compte.db_name);
+      await journaliser(tenantModels, {
+        utilisateur_id: utilisateur.id,
+        utilisateur_nom: utilisateur.nom,
+        action: 'connexion',
+        adresse_ip: req.ip,
+      });
+    } catch (e) {
+      console.error('Erreur journalisation connexion:', e.message);
+    }
 
     return res.json({
       message: 'Connexion réussie.',

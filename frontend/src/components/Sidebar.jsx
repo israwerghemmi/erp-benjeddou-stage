@@ -60,6 +60,12 @@ const IconShield = () => (
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
   </svg>
 );
+const IconHistory = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 3v5h5" /><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" />
+    <path d="M12 7v5l4 2" />
+  </svg>
+);
 
 const ICONS = {
   dashboard: IconDashboard,
@@ -70,6 +76,7 @@ const ICONS = {
   commandes: IconCart,
   finances: IconWallet,
   factures: IconReceipt,
+  historique: IconHistory,
   admin: IconShield,
 };
 
@@ -95,6 +102,8 @@ export default function Sidebar() {
     { label: 'Commandes', path: '/commandes', icon: 'commandes' },
     { label: 'Finances', path: '/finances', icon: 'finances' },
     { label: 'Factures', path: '/factures', icon: 'factures' },
+    { label: 'Historique Paiements', path: '/historique-paiements', icon: 'historique' },
+    
   ];
 
   if (utilisateur.role === 'admin_plateforme') {

@@ -1,15 +1,9 @@
 const PDFDocument = require('pdfkit');
+const ExcelJS = require('exceljs');
 
 exports.genererDepuisCommande = async (req, res) => {
   try {
     const { Commande, ClientCommercial, Produit, Facture } = req.tenantModels;
-
-    console.log('Commande:', typeof Commande);
-    console.log('ClientCommercial:', typeof ClientCommercial);
-    console.log('Produit:', typeof Produit);
-    console.log('Facture:', typeof Facture);
-    console.log('Tous les modèles disponibles:', Object.keys(req.tenantModels));
-
     const commande = await Commande.findByPk(req.params.commandeId, {
       include: [ClientCommercial, Produit],
     });
@@ -103,5 +97,53 @@ exports.supprimer = async (req, res) => {
     res.json({ message: 'Facture supprimée.' });
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la suppression.', error: error.message });
+  }
+};
+exports.exporterExcel = async (req, res) => {
+  try {
+    const { Facture, Commande, ClientCommercial } = req.tenantModels;
+    const factures = await Facture.findAll({
+      include: [{ model: Commande, include: [ClientCommercial] }],
+      order: [['date_emission', 'DESC']],
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Factures');
+
+    sheet.columns = [
+      { header: 'Numéro', key: 'numero', width: 22 },
+      { header: 'Date émission', key: 'date_emission', width: 15 },
+      { header: 'Client', key: 'client', width: 25 },
+      { header: 'Commande', key: 'commande', width: 15 },
+      { header: 'Statut', key: 'statut', width: 12 },
+      { header: 'Montant TTC (DT)', key: 'montant', width: 18 },
+    ];
+
+    sheet.getRow(1).font = { bold: true };
+    sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E79' } };
+    sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+
+    factures.forEach((f) => {
+      sheet.addRow({
+        numero: f.numero,
+        date_emission: f.date_emission,
+        client: f.Commande?.ClientCommercial?.nom || '-',
+        commande: f.Commande?.numero || '-',
+        statut: f.statut,
+        montant: f.montant_ttc,
+      });
+    });
+
+    // Ligne de total
+    const totalRow = sheet.addRow({ numero: '', date_emission: '', client: '', commande: '', statut: 'TOTAL', montant: factures.reduce((s, f) => s + f.montant_ttc, 0) });
+    totalRow.font = { bold: true };
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=historique_factures.xlsx');
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de l\'export Excel.', error: error.message });
   }
 };

@@ -5,6 +5,7 @@ import api from '../services/api';
 export default function Connexion() {
   const [form, setForm] = useState({ email: '', mot_de_passe: '' });
   const [erreur, setErreur] = useState('');
+  const [messageTrial, setMessageTrial] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -12,14 +13,25 @@ export default function Connexion() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErreur('');
+    setMessageTrial('');
     try {
       const res = await api.post('/auth/login', form);
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('utilisateur', JSON.stringify(res.data.utilisateur));
       localStorage.setItem('compte', JSON.stringify(res.data.compte));
-      navigate('/clients');
+
+      if (res.data.messageTrial) {
+        setMessageTrial(res.data.messageTrial);
+        setTimeout(() => navigate('/clients'), 2000);
+      } else {
+        navigate('/clients');
+      }
     } catch (err) {
-      setErreur(err.response?.data?.message || 'Erreur de connexion.');
+      if (err.response?.data?.statut === 'expire') {
+        setErreur(err.response.data.message + ' Vous pouvez exporter vos données depuis la page dédiée.');
+      } else {
+        setErreur(err.response?.data?.message || 'Erreur de connexion.');
+      }
     }
   };
 
@@ -42,6 +54,7 @@ export default function Connexion() {
           <p className="erp-auth-form-subtitle">Accédez à votre espace de gestion</p>
 
           {erreur && <div className="erp-alert erp-alert-error">{erreur}</div>}
+          {messageTrial && <div className="erp-alert erp-alert-warning">{messageTrial}</div>}
 
           <input name="email" type="email" placeholder="Email professionnel" onChange={handleChange}
             className="erp-input" required />

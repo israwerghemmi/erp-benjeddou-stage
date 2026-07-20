@@ -1,12 +1,14 @@
+const { journaliserAction } = require('../utils/journaliser');
 exports.creer = async (req, res) => {
-    try {
-      const { nom, reference, prix, quantite_stock, fournisseur_id } = req.body;
-      const produit = await req.tenantModels.Produit.create({ nom, reference, prix, quantite_stock, fournisseur_id });
-      res.status(201).json(produit);
-    } catch (error) {
-      res.status(500).json({ message: 'Erreur lors de la création du produit.', error: error.message });
-    }
-  };
+  try {
+    const { nom, reference, prix, quantite_stock, fournisseur_id } = req.body;
+    const produit = await req.tenantModels.Produit.create({ nom, reference, prix, quantite_stock, fournisseur_id });
+    await journaliserAction(req, 'creation_produit', { produit_id: produit.id, nom: produit.nom });
+    res.status(201).json(produit);
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la création du produit.', error: error.message });
+  }
+};
   
   exports.listerTous = async (req, res) => {
     try {
@@ -32,6 +34,7 @@ exports.creer = async (req, res) => {
       const produit = await req.tenantModels.Produit.findByPk(req.params.id);
       if (!produit) return res.status(404).json({ message: 'Produit introuvable.' });
       await produit.update(req.body);
+      await journaliserAction(req, 'modification_produit', { produit_id: produit.id });
       res.json(produit);
     } catch (error) {
       res.status(500).json({ message: 'Erreur lors de la modification.', error: error.message });
@@ -43,6 +46,7 @@ exports.creer = async (req, res) => {
       const produit = await req.tenantModels.Produit.findByPk(req.params.id);
       if (!produit) return res.status(404).json({ message: 'Produit introuvable.' });
       await produit.destroy();
+      await journaliserAction(req, 'suppression_produit', { produit_id: req.params.id, nom: produit.nom });
       res.json({ message: 'Produit supprimé.' });
     } catch (error) {
       res.status(500).json({ message: 'Erreur lors de la suppression.', error: error.message });

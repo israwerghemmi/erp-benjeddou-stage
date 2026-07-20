@@ -5,6 +5,7 @@ import api from '../services/api';
 export default function Inscription() {
   const [form, setForm] = useState({
     nom_entreprise: '', email: '', telephone: '', nom_utilisateur: '', mot_de_passe: '',
+    type_abonnement: 'trial',
   });
   const [erreur, setErreur] = useState('');
   const [succes, setSucces] = useState('');
@@ -55,6 +56,20 @@ export default function Inscription() {
             className="erp-input" required />
           <input name="mot_de_passe" type="password" placeholder="Mot de passe" onChange={handleChange}
             className="erp-input" required />
+
+          <div className="erp-form-group">
+            <p className="erp-form-label">Formule souhaitée</p>
+            <label className="erp-radio-option">
+              <input type="radio" name="type_abonnement" value="trial"
+                checked={form.type_abonnement === 'trial'} onChange={handleChange} />
+              <span>Période d'essai gratuite (30 connexions)</span>
+            </label>
+            <label className="erp-radio-option">
+              <input type="radio" name="type_abonnement" value="direct"
+                checked={form.type_abonnement === 'direct'} onChange={handleChange} />
+              <span>Souscrire directement à un abonnement</span>
+            </label>
+          </div>
 
           <button type="submit" className="erp-btn erp-btn-accent erp-btn-full">
             S'inscrire
