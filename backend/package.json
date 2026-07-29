@@ -13,15 +13,21 @@
   "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
+    "csurf": "^1.11.0",
     "dotenv": "^17.4.2",
     "exceljs": "^4.4.0",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.6.0",
     "jsonwebtoken": "^9.0.3",
     "pdfkit": "^0.19.1",
     "pg": "^8.22.0",
+    "qrcode": "^1.5.4",
     "sequelize": "^6.37.8",
-    "stripe": "^22.3.1"
+    "speakeasy": "^2.0.0",
+    "stripe": "^22.3.1",
+    "ua-parser-js": "^2.0.10"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

@@ -5,7 +5,11 @@ const { sequelize } = require('./models');
 const { clearTenantCache } = require('./config/tenantManager');
 
 const app = express();
-app.use(cors());
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 const comptesRoutes = require('./routes/comptesRoutes');
 const authRoutes = require('./routes/authRoutes');
@@ -25,8 +29,13 @@ const exportRoutes = require('./routes/exportRoutes');
 const facturesRoutes = require('./routes/facturesRoutes');
 const paiementEnLigneRoutes = require('./routes/paiementEnLigneRoutes');
 const journalRoutes = require('./routes/journalRoutes');
+const mfaRoutes = require('./routes/mfaRoutes');
+const equipeRoutes = require('./routes/equipeRoutes');
+app.use('/api/equipe', equipeRoutes);
+app.use('/api/mfa', mfaRoutes);
 app.use('/api/journal', journalRoutes);
 app.use('/api/paiement-en-ligne', paiementEnLigneRoutes);
+
 app.use('/api/factures', facturesRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/paiements', paiementsRoutes);

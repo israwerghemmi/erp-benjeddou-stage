@@ -2,6 +2,16 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
+function validerMotDePasse(motDePasse) {
+  return {
+    longueur: motDePasse.length >= 12,
+    majuscule: /[A-Z]/.test(motDePasse),
+    minuscule: /[a-z]/.test(motDePasse),
+    chiffre: /[0-9]/.test(motDePasse),
+    special: /[^A-Za-z0-9]/.test(motDePasse),
+  };
+}
+
 export default function Inscription() {
   const [form, setForm] = useState({
     nom_entreprise: '', email: '', telephone: '', nom_utilisateur: '', mot_de_passe: '',
@@ -13,15 +23,28 @@ export default function Inscription() {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const criteres = validerMotDePasse(form.mot_de_passe);
+  const motDePasseValide = Object.values(criteres).every(Boolean);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErreur('');
+
+    if (form.mot_de_passe && !motDePasseValide) {
+      setErreur('Le mot de passe ne respecte pas tous les critères de sécurité requis.');
+      return;
+    }
+
     try {
       const res = await api.post('/comptes/inscription', form);
       setSucces(res.data.message);
       setTimeout(() => navigate('/connexion'), 1500);
     } catch (err) {
-      setErreur(err.response?.data?.message || 'Erreur lors de l\'inscription.');
+      if (err.response?.data?.erreurs) {
+        setErreur(err.response.data.erreurs.join(' '));
+      } else {
+        setErreur(err.response?.data?.message || 'Erreur lors de l\'inscription.');
+      }
     }
   };
 
@@ -56,6 +79,26 @@ export default function Inscription() {
             className="erp-input" required />
           <input name="mot_de_passe" type="password" placeholder="Mot de passe" onChange={handleChange}
             className="erp-input" required />
+
+          {form.mot_de_passe && (
+            <ul style={{ fontSize: '0.8rem', listStyle: 'none', padding: 0, margin: '0.25rem 0 0.75rem' }}>
+              <li style={{ color: criteres.longueur ? '#16a34a' : '#dc2626' }}>
+                {criteres.longueur ? '✓' : '✗'} Au moins 12 caractères
+              </li>
+              <li style={{ color: criteres.majuscule ? '#16a34a' : '#dc2626' }}>
+                {criteres.majuscule ? '✓' : '✗'} Une lettre majuscule
+              </li>
+              <li style={{ color: criteres.minuscule ? '#16a34a' : '#dc2626' }}>
+                {criteres.minuscule ? '✓' : '✗'} Une lettre minuscule
+              </li>
+              <li style={{ color: criteres.chiffre ? '#16a34a' : '#dc2626' }}>
+                {criteres.chiffre ? '✓' : '✗'} Un chiffre
+              </li>
+              <li style={{ color: criteres.special ? '#16a34a' : '#dc2626' }}>
+                {criteres.special ? '✓' : '✗'} Un caractère spécial
+              </li>
+            </ul>
+          )}
 
           <div className="erp-form-group">
             <p className="erp-form-label">Formule souhaitée</p>

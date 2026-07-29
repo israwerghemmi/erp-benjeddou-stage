@@ -1,10 +1,15 @@
 const bcrypt = require('bcryptjs');
 const { Compte, Utilisateur } = require('../models');
 const { provisionTenant } = require('../config/tenantManager');
+const validerMotDePasse = require('../utils/validerMotDePasse');
 
 exports.inscription = async (req, res) => {
   try {
     const { nom_entreprise, email, telephone, type_compte, nom_utilisateur, mot_de_passe, type_abonnement } = req.body;
+    const { valide, erreurs } = validerMotDePasse(mot_de_passe);
+    if (!valide) {
+      return res.status(400).json({ message: 'Mot de passe non conforme.', erreurs });
+    }
 
     const compteExistant = await Compte.findOne({ where: { email } });
     if (compteExistant) {
@@ -21,7 +26,13 @@ exports.inscription = async (req, res) => {
       trial_utilisations_restantes: estEssai ? 30 : null,
     });
 
-    const dbName = `tenant_${compte.id.replace(/-/g, '')}`;
+    const nomNettoye = nom_entreprise
+       .toLowerCase()
+       .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // retire les accents
+       .replace(/[^a-z0-9]/g, '_')
+       .substring(0, 20);
+    const identifiantCourt = compte.id.replace(/-/g, '').substring(0, 9).toUpperCase();
+    const dbName = `societe_${nomNettoye}_${identifiantCourt}`;
     compte.db_name = dbName;
     await compte.save();
 

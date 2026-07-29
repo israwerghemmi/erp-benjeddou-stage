@@ -14,6 +14,10 @@ import Factures from './pages/Factures';
 import PaiementSucces from './pages/PaiementSucces';
 import PaiementEchec from './pages/PaiementEchec';
 import HistoriquePaiements from './pages/HistoriquePaiements';
+import ActivationMfa from './pages/ActivationMfa';
+import JournalAudit from './pages/JournalAudit';
+import GestionRoles from './pages/GestionRoles';
+import GestionEquipe from './pages/GestionEquipe';
 function App() {
   return (
     <BrowserRouter>
@@ -33,6 +37,10 @@ function App() {
         <Route path="/paiement/succes" element={<RouteProtegee><PaiementSucces /></RouteProtegee>} />
         <Route path="/paiement/echec" element={<RouteProtegee><PaiementEchec /></RouteProtegee>} />
         <Route path="/historique-paiements" element={<RouteProtegee><HistoriquePaiements /></RouteProtegee>} />
+        <Route path="/mfa" element={<RouteProtegee><ActivationMfa /></RouteProtegee>} />
+        <Route path="/journal-audit" element={<RouteProtegee><JournalAudit /></RouteProtegee>} />
+        <Route path="/roles" element={<RouteProtegee><GestionRoles /></RouteProtegee>} />
+        <Route path="/equipe" element={<RouteProtegee><GestionEquipe /></RouteProtegee>} />
       </Routes>
     </BrowserRouter>
   );

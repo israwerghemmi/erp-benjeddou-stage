@@ -103,7 +103,10 @@ export default function Sidebar() {
     { label: 'Finances', path: '/finances', icon: 'finances' },
     { label: 'Factures', path: '/factures', icon: 'factures' },
     { label: 'Historique Paiements', path: '/historique-paiements', icon: 'historique' },
-    
+    { label: 'Journal d\'audit', path: '/journal-audit', icon: 'admin' },
+    { label: 'Sécurité (MFA)', path: '/mfa', icon: 'admin' },
+    { label: 'Rôles & Permissions', path: '/roles', icon: 'admin' },
+    { label: 'Équipe', path: '/equipe', icon: 'clients' },
   ];
 
   if (utilisateur.role === 'admin_plateforme') {
