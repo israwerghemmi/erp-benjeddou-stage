@@ -1,5 +1,6 @@
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
+const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType } = require('docx');
 
 exports.genererDepuisCommande = async (req, res) => {
   try {
@@ -145,5 +146,67 @@ exports.exporterExcel = async (req, res) => {
     res.end();
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de l\'export Excel.', error: error.message });
+  }
+};
+exports.exporterWord = async (req, res) => {
+  try {
+    const { Facture, Commande, ClientCommercial, Produit } = req.tenantModels;
+    const facture = await Facture.findByPk(req.params.id, {
+      include: [{ model: Commande, include: [ClientCommercial, Produit] }],
+    });
+
+    if (!facture) return res.status(404).json({ message: 'Facture introuvable.' });
+
+    const client = facture.Commande?.ClientCommercial;
+    const produits = facture.Commande?.Produits || [];
+
+    const lignesProduits = produits.map((p) => {
+      const qte = p.commande_produit?.quantite || 1;
+      const prixU = p.commande_produit?.prix_unitaire || p.prix;
+      return new TableRow({
+        children: [
+          new TableCell({ children: [new Paragraph(p.nom)] }),
+          new TableCell({ children: [new Paragraph(String(qte))] }),
+          new TableCell({ children: [new Paragraph(`${prixU} DT`)] }),
+        ],
+      });
+    });
+
+    const doc = new Document({
+      sections: [{
+        children: [
+          new Paragraph({ text: 'FACTURE', heading: 'Title', alignment: AlignmentType.CENTER }),
+          new Paragraph({ text: `Numéro : ${facture.numero}` }),
+          new Paragraph({ text: `Date d'émission : ${facture.date_emission}` }),
+          new Paragraph({ text: '' }),
+          new Paragraph({ text: 'Client :', heading: 'Heading2' }),
+          new Paragraph({ text: client?.nom || '-' }),
+          new Paragraph({ text: client?.email || '' }),
+          new Paragraph({ text: '' }),
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({
+                children: [
+                  new TableCell({ children: [new Paragraph('Produit')] }),
+                  new TableCell({ children: [new Paragraph('Quantité')] }),
+                  new TableCell({ children: [new Paragraph('Prix unitaire')] }),
+                ],
+              }),
+              ...lignesProduits,
+            ],
+          }),
+          new Paragraph({ text: '' }),
+          new Paragraph({ text: `Montant total TTC : ${facture.montant_ttc} DT`, alignment: AlignmentType.RIGHT }),
+        ],
+      }],
+    });
+
+    const buffer = await Packer.toBuffer(doc);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename=${facture.numero}.docx`);
+    res.send(buffer);
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de l\'export Word.', error: error.message });
   }
 };

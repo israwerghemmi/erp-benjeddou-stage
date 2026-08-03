@@ -11,5 +11,6 @@ router.get('/', devisController.listerTous);
 router.get('/:id', devisController.obtenirUn);
 router.patch('/:id/statut', devisController.modifierStatut);
 router.delete('/:id', devisController.supprimer);
+router.post('/:id/convertir', devisController.convertirEnCommande);
 
 module.exports = router;

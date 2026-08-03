@@ -4,13 +4,29 @@ require('dotenv').config();
 const { sequelize } = require('./models');
 const { clearTenantCache } = require('./config/tenantManager');
 
+// 🆕 AJOUT — juste après les imports existants
+const helmet = require('helmet');
+const sanitizeMiddleware = require('./middlewares/sanitize');
+const { apiLimiter, sensitiveLimiter } = require('./middlewares/rateLimiter');
+
 const app = express();
 const corsOptions = {
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
 };
+
+// 🆕 AJOUT — avant cors(), en tout premier middleware
+app.use(helmet());
+
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// 🆕 AJOUT — juste après express.json(), car sanitize a besoin du body déjà parsé
+app.use(sanitizeMiddleware);
+
+// 🆕 AJOUT — limiteur global sur toute l'API, avant le montage des routes
+app.use('/api', apiLimiter);
+
 const comptesRoutes = require('./routes/comptesRoutes');
 const authRoutes = require('./routes/authRoutes');
 const testRoutes = require('./routes/testRoutes');
@@ -31,13 +47,33 @@ const paiementEnLigneRoutes = require('./routes/paiementEnLigneRoutes');
 const journalRoutes = require('./routes/journalRoutes');
 const mfaRoutes = require('./routes/mfaRoutes');
 const equipeRoutes = require('./routes/equipeRoutes');
+const sauvegardeRoutes = require('./routes/sauvegardeRoutes');
+
+// 🆕 AJOUT — limiteur strict, à placer AVANT le app.use(route) correspondant
+app.use('/api/sauvegarde', sensitiveLimiter);
+app.use('/api/sauvegarde', sauvegardeRoutes);
+
+// 🆕 AJOUT
+app.use('/api/equipe', sensitiveLimiter);
 app.use('/api/equipe', equipeRoutes);
+
+// 🆕 AJOUT
+app.use('/api/mfa', sensitiveLimiter);
 app.use('/api/mfa', mfaRoutes);
+
+// 🆕 AJOUT
+app.use('/api/journal', sensitiveLimiter);
 app.use('/api/journal', journalRoutes);
+
+// 🆕 AJOUT
+app.use('/api/paiement-en-ligne', sensitiveLimiter);
 app.use('/api/paiement-en-ligne', paiementEnLigneRoutes);
 
-app.use('/api/factures', facturesRoutes);
+// 🆕 AJOUT
+app.use('/api/export', sensitiveLimiter);
 app.use('/api/export', exportRoutes);
+
+app.use('/api/factures', facturesRoutes);
 app.use('/api/paiements', paiementsRoutes);
 app.use('/api/depenses', depensesRoutes);
 app.use('/api/recettes', recettesRoutes);

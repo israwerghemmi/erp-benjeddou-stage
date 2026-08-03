@@ -73,6 +73,21 @@ export default function Factures() {
     }
   };
 
+  const telechargerWord = async (id, numero) => {
+    try {
+      const response = await api.get(`/factures/${id}/word`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${numero}.docx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      setErreur('Erreur lors du téléchargement du document Word.');
+    }
+  };
+
   const commandesSansFacture = commandes.filter(
     (c) => !factures.some((f) => f.commande_id === c.id)
   );
@@ -82,7 +97,7 @@ export default function Factures() {
       <div className="erp-container erp-container-md">
         <header className="erp-page-header">
           <h1>Factures</h1>
-          <p>Génération et téléchargement des factures PDF</p>
+          <p>Génération et téléchargement des factures</p>
         </header>
 
         {erreur && <div className="erp-alert erp-alert-error">{erreur}</div>}
@@ -131,12 +146,20 @@ export default function Factures() {
                   <td><span className={statutBadge(f.statut)}>{f.statut}</span></td>
                   <td>{f.montant_ttc} DT</td>
                   <td>
-                    <button
-                      onClick={() => telechargerPdf(f.id, f.numero)}
-                      className="erp-btn-link erp-btn-link-primary"
-                    >
-                      Télécharger PDF
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <button
+                        onClick={() => telechargerPdf(f.id, f.numero)}
+                        className="erp-btn-link erp-btn-link-primary"
+                      >
+                        PDF
+                      </button>
+                      <button
+                        onClick={() => telechargerWord(f.id, f.numero)}
+                        className="erp-btn-link erp-btn-link-primary"
+                      >
+                        Word
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

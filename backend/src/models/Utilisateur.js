@@ -14,6 +14,7 @@ const Utilisateur = sequelize.define('Utilisateur', {
   verrouille_jusqu_a: { type: DataTypes.DATE, allowNull: true },
   mfa_secret: { type: DataTypes.STRING, allowNull: true },
   mfa_active: { type: DataTypes.BOOLEAN, defaultValue: false },
+  actif: { type: DataTypes.BOOLEAN, defaultValue: true },
 }, { tableName: 'utilisateurs', timestamps: true });
 
 

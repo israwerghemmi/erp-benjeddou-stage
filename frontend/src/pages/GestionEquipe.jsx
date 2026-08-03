@@ -43,6 +43,31 @@ export default function GestionEquipe() {
     }
   };
 
+  const toggleActif = async (id) => {
+    setErreur('');
+    setSucces('');
+    try {
+      const res = await api.patch(`/equipe/${id}/desactiver`);
+      setSucces(res.data.message);
+      charger();
+    } catch (err) {
+      setErreur(err.response?.data?.message || 'Erreur lors du changement de statut.');
+    }
+  };
+
+  const supprimerCollaborateur = async (id, nom) => {
+    if (!window.confirm(`Supprimer définitivement l'accès de ${nom} ?`)) return;
+    setErreur('');
+    setSucces('');
+    try {
+      await api.delete(`/equipe/${id}`);
+      setSucces('Collaborateur supprimé.');
+      charger();
+    } catch (err) {
+      setErreur(err.response?.data?.message || 'Erreur lors de la suppression.');
+    }
+  };
+
   return (
     <div className="erp-page">
       <div className="erp-container erp-container-md">
@@ -77,7 +102,9 @@ export default function GestionEquipe() {
                 <th>Nom</th>
                 <th>Email</th>
                 <th>Rôle</th>
+                <th>Statut</th>
                 <th>Dernière connexion</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -86,7 +113,24 @@ export default function GestionEquipe() {
                   <td>{m.nom}</td>
                   <td>{m.email}</td>
                   <td>{m.role_nom || (m.role === 'admin_compte' ? 'Administrateur' : 'Non défini')}</td>
+                  <td>
+                    <span className={m.actif !== false ? 'erp-badge erp-badge-success' : 'erp-badge erp-badge-danger'}>
+                      {m.actif !== false ? 'Actif' : 'Désactivé'}
+                    </span>
+                  </td>
                   <td>{m.derniere_connexion ? new Date(m.derniere_connexion).toLocaleString('fr-FR') : 'Jamais connecté'}</td>
+                  <td>
+                    {m.role !== 'admin_compte' && (
+                      <div style={{ display: 'flex', gap: '0.75rem' }}>
+                        <button onClick={() => toggleActif(m.id)} className="erp-btn-link erp-btn-link-primary">
+                          {m.actif !== false ? 'Désactiver' : 'Réactiver'}
+                        </button>
+                        <button onClick={() => supprimerCollaborateur(m.id, m.nom)} className="erp-btn-link" style={{ color: '#dc2626' }}>
+                          Supprimer
+                        </button>
+                      </div>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

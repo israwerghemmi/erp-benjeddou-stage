@@ -11,6 +11,7 @@ function calculerDureeVerrouillage(nombreEchecs) {
   const index = Math.min(Math.floor(nombreEchecs / 5) - 1, paliers.length - 1);
   return index >= 0 ? paliers[index] : 0;
 }
+
 exports.login = async (req, res) => {
   try {
     const { email, mot_de_passe } = req.body;
@@ -18,6 +19,9 @@ exports.login = async (req, res) => {
     const utilisateur = await Utilisateur.findOne({ where: { email }, include: Compte });
     if (!utilisateur) {
       return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
+    }
+    if (!utilisateur.actif) {
+      return res.status(403).json({ message: 'Ce compte a été désactivé. Contactez votre administrateur.' });
     }
     // Vérifier si le compte est actuellement verrouillé
     if (utilisateur.verrouille_jusqu_a && new Date() < utilisateur.verrouille_jusqu_a) {
@@ -28,48 +32,49 @@ exports.login = async (req, res) => {
     }
 
     const motDePasseValide = await bcrypt.compare(mot_de_passe, utilisateur.mot_de_passe);
-if (!motDePasseValide) {
-  utilisateur.tentatives_echouees += 1;
 
-  if (utilisateur.tentatives_echouees % 5 === 0) {
-    const dureeMinutes = calculerDureeVerrouillage(utilisateur.tentatives_echouees);
-    utilisateur.verrouille_jusqu_a = new Date(Date.now() + dureeMinutes * 60000);
-  }
-  // Vérification MFA si activé sur ce compte
-if (utilisateur.mfa_active) {
-  const { code_mfa } = req.body;
+    if (!motDePasseValide) {
+      utilisateur.tentatives_echouees += 1;
 
-  if (!code_mfa) {
-    return res.status(206).json({
-      message: 'Code MFA requis pour terminer la connexion.',
-      mfa_requis: true,
-    });
-  }
+      if (utilisateur.tentatives_echouees % 5 === 0) {
+        const dureeMinutes = calculerDureeVerrouillage(utilisateur.tentatives_echouees);
+        utilisateur.verrouille_jusqu_a = new Date(Date.now() + dureeMinutes * 60000);
+      }
 
-  const codeValide = speakeasy.totp.verify({
-    secret: utilisateur.mfa_secret,
-    encoding: 'base32',
-    token: code_mfa,
-    window: 1,
-  });
+      await utilisateur.save();
+      return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
+    }
 
-  if (!codeValide) {
-    return res.status(401).json({ message: 'Code MFA invalide.' });
-  }
-}
+    // Mot de passe correct : on vérifie le MFA MAINTENANT, avant de délivrer le token
+    if (utilisateur.mfa_active) {
+      const { code_mfa } = req.body;
 
-  await utilisateur.save();
-  return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
-}
+      if (!code_mfa) {
+        return res.status(206).json({
+          message: 'Code MFA requis pour terminer la connexion.',
+          mfa_requis: true,
+        });
+      }
+
+      const codeValide = speakeasy.totp.verify({
+        secret: utilisateur.mfa_secret,
+        encoding: 'base32',
+        token: code_mfa,
+        window: 1,
+      });
+
+      if (!codeValide) {
+        return res.status(401).json({ message: 'Code MFA invalide.' });
+      }
+    }
+
     // Connexion réussie : réinitialiser le compteur
     utilisateur.tentatives_echouees = 0;
     utilisateur.verrouille_jusqu_a = null;
 
-
     if (utilisateur.Compte.statut === 'refuse') {
       return res.status(403).json({ message: 'Votre compte a été refusé. Contactez le support.' });
     }
-    
 
     let messageTrial = null;
 
@@ -98,10 +103,11 @@ if (utilisateur.mfa_active) {
     );
     utilisateur.session_token_actif = token;
     await utilisateur.save();
+
     try {
       const parser = new UAParser(req.headers['user-agent']);
       const resultatUA = parser.getResult();
-    
+
       const { models: tenantModels } = await getTenantConnection(utilisateur.Compte.db_name);
       await journaliser(tenantModels, {
         utilisateur_id: utilisateur.id,
@@ -134,4 +140,3 @@ if (utilisateur.mfa_active) {
     return res.status(500).json({ message: 'Erreur lors de la connexion.', error: error.message });
   }
 };
-

@@ -13,14 +13,19 @@ export default function Devis() {
   const [produits, setProduits] = useState([]);
   const [form, setForm] = useState({ numero: '', client_id: '', produit_id: '', quantite: 1, prix_unitaire: '' });
   const [erreur, setErreur] = useState('');
+  const [succes, setSucces] = useState('');
 
   const charger = async () => {
-    const [devisRes, clientsRes, produitsRes] = await Promise.all([
-      api.get('/devis'), api.get('/clients'), api.get('/produits'),
-    ]);
-    setDevisListe(devisRes.data);
-    setClients(clientsRes.data);
-    setProduits(produitsRes.data);
+    try {
+      const [devisRes, clientsRes, produitsRes] = await Promise.all([
+        api.get('/devis'), api.get('/clients'), api.get('/produits'),
+      ]);
+      setDevisListe(devisRes.data);
+      setClients(clientsRes.data);
+      setProduits(produitsRes.data);
+    } catch (err) {
+      setErreur('Impossible de charger les devis.');
+    }
   };
 
   useEffect(() => { charger(); }, []);
@@ -42,15 +47,37 @@ export default function Devis() {
     }
   };
 
+  const changerStatut = async (id, statut) => {
+    try {
+      await api.patch(`/devis/${id}/statut`, { statut });
+      charger();
+    } catch (err) {
+      setErreur('Erreur lors du changement de statut.');
+    }
+  };
+
+  const convertirEnCommande = async (id) => {
+    setErreur('');
+    setSucces('');
+    try {
+      const res = await api.post(`/devis/${id}/convertir`);
+      setSucces(`Commande ${res.data.commande.numero} créée avec succès.`);
+      charger();
+    } catch (err) {
+      setErreur(err.response?.data?.message || 'Erreur lors de la conversion.');
+    }
+  };
+
   return (
     <div className="erp-page">
       <div className="erp-container erp-container-md">
         <header className="erp-page-header">
           <h1>Devis</h1>
-          <p>Créez et suivez vos propositions commerciales</p>
+          <p>Création et suivi des devis clients</p>
         </header>
 
         {erreur && <div className="erp-alert erp-alert-error">{erreur}</div>}
+        {succes && <div className="erp-alert erp-alert-success">{succes}</div>}
 
         <form onSubmit={handleCreer} className="erp-card erp-card-padded erp-form-grid" style={{ marginBottom: '1.5rem' }}>
           <input name="numero" value={form.numero} placeholder="Numéro (ex: DEV-001)" onChange={handleChange}
@@ -67,7 +94,7 @@ export default function Devis() {
             className="erp-input" required />
           <input name="prix_unitaire" type="number" step="0.01" value={form.prix_unitaire} placeholder="Prix unitaire" onChange={handleChange}
             className="erp-input" style={{ gridColumn: '1 / -1' }} required />
-          <button type="submit" className="erp-btn erp-btn-primary" style={{ gridColumn: '1 / -1' }}>
+          <button type="submit" className="erp-btn erp-btn-accent" style={{ gridColumn: '1 / -1' }}>
             Créer le devis
           </button>
         </form>
@@ -80,6 +107,7 @@ export default function Devis() {
                 <th>Client</th>
                 <th>Statut</th>
                 <th>Montant</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -89,6 +117,24 @@ export default function Devis() {
                   <td>{d.ClientCommercial?.nom || '-'}</td>
                   <td><span className={statutBadge(d.statut)}>{d.statut}</span></td>
                   <td>{d.montant_total} DT</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                      <select
+                        value={d.statut}
+                        onChange={(e) => changerStatut(d.id, e.target.value)}
+                        className="erp-select erp-input-sm"
+                      >
+                        <option value="en_attente">En attente</option>
+                        <option value="accepte">Accepté</option>
+                        <option value="refuse">Refusé</option>
+                      </select>
+                      {d.statut === 'accepte' && (
+                        <button onClick={() => convertirEnCommande(d.id)} className="erp-btn-link erp-btn-link-primary">
+                          Convertir en commande
+                        </button>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

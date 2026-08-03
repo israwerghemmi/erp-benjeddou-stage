@@ -69,3 +69,38 @@ exports.supprimer = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la suppression.', error: error.message });
   }
 };
+exports.convertirEnCommande = async (req, res) => {
+  try {
+    const { Devis, Commande, Produit } = req.tenantModels;
+
+    const devis = await Devis.findByPk(req.params.id, { include: [Produit] });
+    if (!devis) return res.status(404).json({ message: 'Devis introuvable.' });
+
+    if (devis.statut !== 'accepte') {
+      return res.status(400).json({ message: 'Seul un devis accepté peut être converti en commande.' });
+    }
+
+    const numeroCommande = `CMD-${Date.now()}`;
+    const commande = await Commande.create({
+      numero: numeroCommande,
+      client_id: devis.client_id,
+      montant_total: devis.montant_total,
+      statut: 'en_cours',
+    });
+
+    for (const produit of devis.Produits) {
+      await commande.addProduit(produit.id, {
+        through: {
+          quantite: produit.devis_produit.quantite,
+          prix_unitaire: produit.devis_produit.prix_unitaire,
+        },
+      });
+    }
+
+    await journaliserAction(req, 'conversion_devis_commande', { devis_id: devis.id, commande_id: commande.id });
+
+    res.status(201).json({ message: 'Devis converti en commande avec succès.', commande });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la conversion.', error: error.message });
+  }
+};

@@ -71,3 +71,45 @@ exports.lister = async (req, res) => {
     res.status(500).json({ message: 'Erreur.', error: error.message });
   }
 };
+exports.desactiver = async (req, res) => {
+    try {
+      if (req.user.role !== 'admin_compte') {
+        return res.status(403).json({ message: 'Seul l\'administrateur peut gérer les accès.' });
+      }
+      const collaborateur = await Utilisateur.findOne({
+        where: { id: req.params.id, compte_id: req.user.compte_id },
+      });
+      if (!collaborateur) return res.status(404).json({ message: 'Collaborateur introuvable.' });
+  
+      collaborateur.actif = !collaborateur.actif;
+      collaborateur.session_token_actif = null; // force la déconnexion immédiate si désactivé
+      await collaborateur.save();
+  
+      await journaliserAction(req, collaborateur.actif ? 'reactivation_collaborateur' : 'desactivation_collaborateur', {
+        utilisateur_id: collaborateur.id,
+      });
+  
+      res.json({ message: `Collaborateur ${collaborateur.actif ? 'réactivé' : 'désactivé'}.`, actif: collaborateur.actif });
+    } catch (error) {
+      res.status(500).json({ message: 'Erreur.', error: error.message });
+    }
+  };
+  
+  exports.supprimer = async (req, res) => {
+    try {
+      if (req.user.role !== 'admin_compte') {
+        return res.status(403).json({ message: 'Seul l\'administrateur peut gérer les accès.' });
+      }
+      const collaborateur = await Utilisateur.findOne({
+        where: { id: req.params.id, compte_id: req.user.compte_id },
+      });
+      if (!collaborateur) return res.status(404).json({ message: 'Collaborateur introuvable.' });
+  
+      await journaliserAction(req, 'suppression_collaborateur', { utilisateur_id: collaborateur.id, email: collaborateur.email });
+      await collaborateur.destroy();
+  
+      res.json({ message: 'Collaborateur supprimé.' });
+    } catch (error) {
+      res.status(500).json({ message: 'Erreur.', error: error.message });
+    }
+  };
