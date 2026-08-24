@@ -4,6 +4,9 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const tenantMiddleware = require('../middlewares/tenantMiddleware');
 const facturesController = require('../controllers/facturesController');
 
+// Route publique — AVANT le middleware d'authentification (accessible sans connexion, via le QR code)
+router.get('/verifier/:dbName/:numero', facturesController.verifierFacture);
+
 router.use(authMiddleware, tenantMiddleware);
 
 router.post('/generer/:commandeId', facturesController.genererDepuisCommande);

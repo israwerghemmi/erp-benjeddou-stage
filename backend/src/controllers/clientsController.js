@@ -1,8 +1,18 @@
 const { journaliserAction } = require('../utils/journaliser');
-
+const { validerEmail, validerTelephone, validerChampsRequis } = require('../utils/validerFormulaire');
 exports.creer = async (req, res) => {
   try {
     const { nom, email, telephone, adresse } = req.body;
+    const manquants = validerChampsRequis(req.body, ['nom']);
+    if (manquants.length > 0) {
+      return res.status(400).json({ message: `Champs requis manquants : ${manquants.join(', ')}` });
+    }
+    if (email && !validerEmail(email)) {
+      return res.status(400).json({ message: 'Format d\'email invalide.' });
+    }
+    if (telephone && !validerTelephone(telephone)) {
+      return res.status(400).json({ message: 'Format de téléphone invalide.' });
+    }
     const client = await req.tenantModels.ClientCommercial.create({ nom, email, telephone, adresse });
     await journaliserAction(req, 'creation_client', { client_id: client.id, nom: client.nom });
     res.status(201).json(client);

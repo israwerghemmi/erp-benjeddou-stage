@@ -18,9 +18,18 @@ import ActivationMfa from './pages/ActivationMfa';
 import JournalAudit from './pages/JournalAudit';
 import GestionRoles from './pages/GestionRoles';
 import GestionEquipe from './pages/GestionEquipe';
+import RechercheGlobale from './pages/RechercheGlobale';
+import { ThemeProvider } from './context/ThemeContext';
+import { LangueProvider } from './context/LangueContext';
+import GestionKyc from './pages/GestionKyc';
+import Entrepots from './pages/Entrepots';
+import MouvementsStock from './pages/MouvementsStock';
+import GestionDocumentaire from './pages/GestionDocumentaire';
 function App() {
   return (
-    <BrowserRouter>
+  <ThemeProvider>
+    <LangueProvider>
+      <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/connexion" />} />
         <Route path="/inscription" element={<Inscription />} />
@@ -41,9 +50,16 @@ function App() {
         <Route path="/journal-audit" element={<RouteProtegee><JournalAudit /></RouteProtegee>} />
         <Route path="/roles" element={<RouteProtegee><GestionRoles /></RouteProtegee>} />
         <Route path="/equipe" element={<RouteProtegee><GestionEquipe /></RouteProtegee>} />
+        <Route path="/recherche" element={<RouteProtegee><RechercheGlobale /></RouteProtegee>} />
+        <Route path="/kyc" element={<RouteProtegee><GestionKyc /></RouteProtegee>} />
+        <Route path="/entrepots" element={<RouteProtegee><Entrepots /></RouteProtegee>} />
+        <Route path="/mouvements-stock" element={<RouteProtegee><MouvementsStock /></RouteProtegee>} />
+        <Route path="/documents" element={<RouteProtegee><GestionDocumentaire /></RouteProtegee>} />
       </Routes>
     </BrowserRouter>
-  );
+  </LangueProvider>
+</ThemeProvider>  
+);
 }
 
 export default App;

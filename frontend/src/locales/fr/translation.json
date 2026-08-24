@@ -1,0 +1,50 @@
+
+{
+    "commun": {
+      "enregistrer": "Enregistrer",
+      "annuler": "Annuler",
+      "supprimer": "Supprimer",
+      "modifier": "Modifier",
+      "ajouter": "Ajouter",
+      "rechercher": "Rechercher"
+    },
+    "sidebar": {
+  "tableauDeBord": "Tableau de bord",
+  "rechercheGlobale": "Recherche globale",
+  "clients": "Clients",
+  "produits": "Produits",
+  "fournisseurs": "Fournisseurs",
+  "devis": "Devis",
+  "commandes": "Commandes",
+  "finances": "Finances",
+  "factures": "Factures",
+  "historiquePaiements": "Historique Paiements",
+  "journalAudit": "Journal d'audit",
+  "securiteMfa": "Sécurité (MFA)",
+  "rolesPermissions": "Rôles & Permissions",
+  "equipe": "Équipe",
+  "verificationKyc": "Vérification KYC",
+  "comptesEnAttente": "Comptes en attente",
+  "gestionEntreprise": "Gestion d'entreprise",
+  "utilisateur": "Utilisateur",
+  "membre": "membre",
+  "modeSombre": "Mode sombre",
+  "modeClair": "Mode clair",
+  "deconnexion": "Déconnexion"
+},
+    "clients": {
+      "titre": "Mes Clients",
+      "sousTitre": "Gérez votre portefeuille clients",
+      "nom": "Nom",
+      "email": "Email",
+      "telephone": "Téléphone",
+      "adresse": "Adresse",
+      "ajouterClient": "Ajouter le client"
+    },
+    "erreurs": {
+      "champsRequis": "Champs requis manquants : {{champs}}",
+      "emailInvalide": "Format d'email invalide.",
+      "telephoneInvalide": "Format de téléphone invalide.",
+      "erreurGenerique": "Une erreur est survenue."
+    }
+  }

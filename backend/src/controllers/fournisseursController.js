@@ -1,6 +1,17 @@
+const { validerEmail, validerTelephone, validerChampsRequis } = require('../utils/validerFormulaire');
 exports.creer = async (req, res) => {
     try {
       const { nom, email, telephone } = req.body;
+      const manquants = validerChampsRequis(req.body, ['nom','email','telephone']);
+      if (manquants.length > 0) {
+        return res.status(400).json({ message: `Champs requis manquants : ${manquants.join(', ')}` });
+      }
+      if (email && !validerEmail(email)) {
+        return res.status(400).json({ message: 'Format d\'email invalide.' });
+      }
+      if (telephone && !validerTelephone(telephone)) {
+        return res.status(400).json({ message: 'Format de téléphone invalide.' });
+      }
       const fournisseur = await req.tenantModels.Fournisseur.create({ nom, email, telephone });
       res.status(201).json(fournisseur);
     } catch (error) {

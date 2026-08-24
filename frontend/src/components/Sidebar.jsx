@@ -1,4 +1,13 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LangueContext';
+
+const IconSearch = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
 
 const IconDashboard = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -69,6 +78,7 @@ const IconHistory = () => (
 
 const ICONS = {
   dashboard: IconDashboard,
+  recherche: IconSearch,
   clients: IconUsers,
   produits: IconBox,
   fournisseurs: IconTruck,
@@ -78,11 +88,15 @@ const ICONS = {
   factures: IconReceipt,
   historique: IconHistory,
   admin: IconShield,
+  
 };
 
 export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme, basculerTheme } = useTheme();
+  const { langue, setLangue } = useLanguage();
+  const { t } = useTranslation();
   const utilisateur = JSON.parse(localStorage.getItem('utilisateur') || '{}');
   const compte = JSON.parse(localStorage.getItem('compte') || '{}');
 
@@ -92,26 +106,37 @@ export default function Sidebar() {
     localStorage.removeItem('compte');
     navigate('/connexion');
   };
-
   const liens = [
-    { label: 'Tableau de bord', path: '/dashboard', icon: 'dashboard' },
-    { label: 'Clients', path: '/clients', icon: 'clients' },
-    { label: 'Produits', path: '/produits', icon: 'produits' },
-    { label: 'Fournisseurs', path: '/fournisseurs', icon: 'fournisseurs' },
-    { label: 'Devis', path: '/devis', icon: 'devis' },
-    { label: 'Commandes', path: '/commandes', icon: 'commandes' },
-    { label: 'Finances', path: '/finances', icon: 'finances' },
-    { label: 'Factures', path: '/factures', icon: 'factures' },
-    { label: 'Historique Paiements', path: '/historique-paiements', icon: 'historique' },
-    { label: 'Journal d\'audit', path: '/journal-audit', icon: 'admin' },
-    { label: 'Sécurité (MFA)', path: '/mfa', icon: 'admin' },
-    { label: 'Rôles & Permissions', path: '/roles', icon: 'admin' },
-    { label: 'Équipe', path: '/equipe', icon: 'clients' },
+      { label: t('sidebar.tableauDeBord'), path: '/dashboard', icon: 'dashboard' },
+      { label: t('sidebar.rechercheGlobale'), path: '/recherche', icon: 'recherche' },
+      { label: t('sidebar.clients'), path: '/clients', icon: 'clients' },
+      { label: t('sidebar.produits'), path: '/produits', icon: 'produits' },
+      { label: t('sidebar.fournisseurs'), path: '/fournisseurs', icon: 'fournisseurs' },
+      { label: t('sidebar.devis'), path: '/devis', icon: 'devis' },
+      { label: t('sidebar.commandes'), path: '/commandes', icon: 'commandes' },
+      { label: t('sidebar.finances'), path: '/finances', icon: 'finances' },
+      { label: t('sidebar.factures'), path: '/factures', icon: 'factures' },
+      { label: t('sidebar.historiquePaiements'), path: '/historique-paiements', icon: 'historique' },
+      { label: t('Gestion Documentaire'), path: '/documents', icon: 'factures' },
   ];
-
-  if (utilisateur.role === 'admin_plateforme') {
-    liens.push({ label: 'Comptes en attente', path: '/comptes-en-attente', icon: 'admin' });
-  }
+  
+    // Modules d'administration : UNIQUEMENT pour admin_compte et admin_plateforme
+    if (utilisateur.role === 'admin_compte' || utilisateur.role === 'admin_plateforme') {
+      liens.push(
+        { label: t('sidebar.verificationKyc'), path: '/kyc', icon: 'admin' },
+        { label: t('sidebar.journalAudit'), path: '/journal-audit', icon: 'admin' },
+        { label: t('sidebar.securiteMfa'), path: '/mfa', icon: 'admin' },
+        { label: t('sidebar.rolesPermissions'), path: '/roles', icon: 'admin' },
+        { label: t('sidebar.equipe'), path: '/equipe', icon: 'clients' },
+        { label: t('Entrepots'), path: '/entrepots', icon: 'produits' },
+        { label: t('Mouvements Stock'), path: '/mouvements-stock', icon: 'produits' }
+      );
+    }
+  
+    // Modules réservés UNIQUEMENT à l'admin plateforme
+    if (utilisateur.role === 'admin_plateforme') {
+      liens.push({ label: t('sidebar.comptesEnAttente'), path: '/comptes-en-attente', icon: 'admin' });
+    }
 
   const initiales = (utilisateur.nom || 'U')
     .split(' ')
@@ -124,7 +149,7 @@ export default function Sidebar() {
     <aside className="erp-sidebar">
       <div className="erp-sidebar-brand">
         <span className="erp-sidebar-brand-name">{compte.nom_entreprise || 'ERP'}</span>
-        <span className="erp-sidebar-brand-tag">Gestion d'entreprise</span>
+        <span className="erp-sidebar-brand-tag">{t('sidebar.gestionEntreprise')}</span>
       </div>
 
       <nav className="erp-sidebar-nav">
@@ -148,12 +173,23 @@ export default function Sidebar() {
         <div className="erp-sidebar-user">
           <div className="erp-sidebar-avatar">{initiales}</div>
           <div>
-            <div className="erp-sidebar-user-name">{utilisateur.nom || 'Utilisateur'}</div>
-            <div className="erp-sidebar-user-role">{utilisateur.role?.replace('_', ' ') || 'membre'}</div>
+            <div className="erp-sidebar-user-name">{utilisateur.nom || t('sidebar.utilisateur')}</div>
+            <div className="erp-sidebar-user-role">{utilisateur.role?.replace('_', ' ') || t('sidebar.membre')}</div>
           </div>
         </div>
+
+        <select value={langue} onChange={(e) => setLangue(e.target.value)} className="erp-select erp-input-sm">
+          <option value="fr">Français</option>
+          <option value="en">English</option>
+          <option value="ar">العربية</option>
+        </select>
+
+        <button onClick={basculerTheme} className="erp-btn erp-btn-ghost erp-btn-sm erp-btn-full">
+          {theme === 'clair' ? `🌙 ${t('sidebar.modeSombre')}` : `☀️ ${t('sidebar.modeClair')}`}
+        </button>
+
         <button onClick={handleDeconnexion} className="erp-btn erp-btn-ghost-danger erp-btn-sm erp-btn-full">
-          Déconnexion
+          {t('sidebar.deconnexion')}
         </button>
       </div>
     </aside>

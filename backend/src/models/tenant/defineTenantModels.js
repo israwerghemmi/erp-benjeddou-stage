@@ -26,6 +26,13 @@ module.exports = function defineTenantModels(sequelize) {
     email: { type: DataTypes.STRING },
     telephone: { type: DataTypes.STRING },
     adresse: { type: DataTypes.STRING },
+    statut_kyc: {
+      type: DataTypes.ENUM('non_soumis', 'en_attente', 'verifie', 'rejete'),
+      defaultValue: 'non_soumis',
+    },
+    document_identite_url: { type: DataTypes.STRING, allowNull: true },
+    kyc_commentaire: { type: DataTypes.STRING, allowNull: true }, // motif de rejet éventuel
+    kyc_verifie_le: { type: DataTypes.DATE, allowNull: true },
   }, { tableName: 'clients_commerciaux', timestamps: true });
 
   const Fournisseur = sequelize.define('Fournisseur', {
@@ -41,6 +48,7 @@ module.exports = function defineTenantModels(sequelize) {
     reference: { type: DataTypes.STRING },
     prix: { type: DataTypes.FLOAT, allowNull: false },
     quantite_stock: { type: DataTypes.INTEGER, defaultValue: 0 },
+    seuil_alerte: { type: DataTypes.INTEGER, defaultValue: 5 },
   }, { tableName: 'produits', timestamps: true });
 
   const Devis = sequelize.define('Devis', {
@@ -55,9 +63,11 @@ module.exports = function defineTenantModels(sequelize) {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     numero: { type: DataTypes.STRING, allowNull: false },
     date_creation: { type: DataTypes.DATEONLY, defaultValue: DataTypes.NOW },
+    date_livraison_souhaitee: { type: DataTypes.DATEONLY, allowNull: true },
     statut: { type: DataTypes.ENUM('en_cours', 'livree', 'annulee'), defaultValue: 'en_cours' },
     montant_total: { type: DataTypes.FLOAT, defaultValue: 0 },
   }, { tableName: 'commandes', timestamps: true });
+
   const Paiement = sequelize.define('Paiement', {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     reference: { type: DataTypes.STRING, allowNull: false },
@@ -66,7 +76,7 @@ module.exports = function defineTenantModels(sequelize) {
     date_paiement: { type: DataTypes.DATEONLY, defaultValue: DataTypes.NOW },
     commande_id: { type: DataTypes.UUID, allowNull: true },
   }, { tableName: 'paiements', timestamps: true });
-  
+
   const Depense = sequelize.define('Depense', {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     libelle: { type: DataTypes.STRING, allowNull: false },
@@ -74,7 +84,7 @@ module.exports = function defineTenantModels(sequelize) {
     categorie: { type: DataTypes.STRING },
     date_depense: { type: DataTypes.DATEONLY, defaultValue: DataTypes.NOW },
   }, { tableName: 'depenses', timestamps: true });
-  
+
   const Recette = sequelize.define('Recette', {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     libelle: { type: DataTypes.STRING, allowNull: false },
@@ -90,7 +100,9 @@ module.exports = function defineTenantModels(sequelize) {
     date_emission: { type: DataTypes.DATEONLY, defaultValue: DataTypes.NOW },
     montant_ttc: { type: DataTypes.FLOAT, allowNull: false },
     statut: { type: DataTypes.ENUM('emise', 'payee', 'annulee'), defaultValue: 'emise' },
+    montant_en_lettres: { type: DataTypes.STRING, allowNull: true },
   }, { tableName: 'factures', timestamps: true });
+
   const PaiementEnLigne = sequelize.define('PaiementEnLigne', {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     session_id: { type: DataTypes.STRING, allowNull: false, unique: true },
@@ -98,6 +110,7 @@ module.exports = function defineTenantModels(sequelize) {
     montant: { type: DataTypes.FLOAT, allowNull: false },
     statut: { type: DataTypes.ENUM('en_attente', 'reussi', 'echoue'), defaultValue: 'en_attente' },
   }, { tableName: 'paiements_en_ligne', timestamps: true });
+
   const JournalAudit = sequelize.define('JournalAudit', {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     utilisateur_id: { type: DataTypes.UUID, allowNull: false },
@@ -106,7 +119,34 @@ module.exports = function defineTenantModels(sequelize) {
     details: { type: DataTypes.JSONB, allowNull: true },
     adresse_ip: { type: DataTypes.STRING, allowNull: true },
   }, { tableName: 'journal_audit', timestamps: true });
-  
+
+  const Entrepot = sequelize.define('Entrepot', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    nom: { type: DataTypes.STRING, allowNull: false },
+    adresse: { type: DataTypes.STRING, allowNull: true },
+    responsable: { type: DataTypes.STRING, allowNull: true },
+  }, { tableName: 'entrepots', timestamps: true });
+
+  const MouvementStock = sequelize.define('MouvementStock', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    type: { type: DataTypes.ENUM('entree', 'sortie', 'transfert', 'ajustement'), allowNull: false },
+    quantite: { type: DataTypes.INTEGER, allowNull: false },
+    motif: { type: DataTypes.STRING, allowNull: true },
+  }, { tableName: 'mouvements_stock', timestamps: true });
+
+  const Document = sequelize.define('Document', {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    nom: { type: DataTypes.STRING, allowNull: false },
+    type: {
+      type: DataTypes.ENUM('devis', 'facture', 'bon_livraison', 'bon_reception', 'contrat', 'autre'),
+      defaultValue: 'autre',},
+    fichier_url: { type: DataTypes.STRING, allowNull: false },
+    taille_ko: { type: DataTypes.INTEGER, allowNull: true },
+    entite_liee_type: { type: DataTypes.STRING, allowNull: true },
+    entite_liee_id: { type: DataTypes.UUID, allowNull: true },
+    archive: { type: DataTypes.BOOLEAN, defaultValue: false },
+  }, { tableName: 'documents', timestamps: true });
+
   Commande.hasMany(PaiementEnLigne, { foreignKey: 'commande_id' });
   PaiementEnLigne.belongsTo(Commande, { foreignKey: 'commande_id' });
 
@@ -137,7 +177,12 @@ module.exports = function defineTenantModels(sequelize) {
   Commande.hasOne(Facture, { foreignKey: 'commande_id' });
   Facture.belongsTo(Commande, { foreignKey: 'commande_id' });
 
-  
+  // Stock : un mouvement appartient à un entrepôt et à un produit
+  Entrepot.hasMany(MouvementStock, { foreignKey: 'entrepot_id' });
+  MouvementStock.belongsTo(Entrepot, { foreignKey: 'entrepot_id' });
 
-  return { Departement, Role, UtilisateurProfil, ClientCommercial, Fournisseur, Produit, Devis, Commande, Paiement, Depense, Recette ,Facture ,PaiementEnLigne,JournalAudit };
+  Produit.hasMany(MouvementStock, { foreignKey: 'produit_id' });
+  MouvementStock.belongsTo(Produit, { foreignKey: 'produit_id' });
+
+  return { Departement, Role, UtilisateurProfil, ClientCommercial, Fournisseur, Produit, Devis, Commande, Paiement, Depense, Recette, Facture, PaiementEnLigne, JournalAudit, Entrepot, MouvementStock,Document };
 };

@@ -1,0 +1,53 @@
+
+{
+    "commun": {
+      "enregistrer": "Save",
+      "annuler": "Cancel",
+      "supprimer": "Delete",
+      "modifier": "Edit",
+      "ajouter": "Add",
+      "rechercher": "Search"
+    },
+    "sidebar": {
+  "tableauDeBord": "Dashboard",
+  "rechercheGlobale": "Global Search",
+  "clients": "Clients",
+  "produits": "Products",
+  "fournisseurs": "Suppliers",
+  "devis": "Quotes",
+  "commandes": "Orders",
+  "finances": "Finance",
+  "factures": "Invoices",
+  "historiquePaiements": "Payment History",
+  "journalAudit": "Audit Log",
+  "securiteMfa": "Security (MFA)",
+  "rolesPermissions": "Roles & Permissions",
+  "equipe": "Team",
+  "verificationKyc": "KYC Verification",
+  "comptesEnAttente": "Pending Accounts",
+  "gestionEntreprise": "Business Management",
+  "utilisateur": "User",
+  "membre": "member",
+  "modeSombre": "Dark mode",
+  "modeClair": "Light mode",
+  "deconnexion": "Log out",
+  "entrepots": "Warehouses",
+  "mouvementsStock": "Stock Movements",
+  "gestionDocumentaire": "Document Management"
+},
+    "clients": {
+      "titre": "My Clients",
+      "sousTitre": "Manage your client portfolio",
+      "nom": "Name",
+      "email": "Email",
+      "telephone": "Phone",
+      "adresse": "Address",
+      "ajouterClient": "Add client"
+    },
+    "erreurs": {
+      "champsRequis": "Missing required fields: {{champs}}",
+      "emailInvalide": "Invalid email format.",
+      "telephoneInvalide": "Invalid phone format.",
+      "erreurGenerique": "An error occurred."
+    }
+  }

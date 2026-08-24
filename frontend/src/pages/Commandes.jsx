@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
+import ChampDate from '../components/ChampDate';
+import { formaterDateAffichage, estDateValide, estDateFuture, estDatePassee } from '../utils/dateUtils';
+import { useParams } from 'react-router-dom';
 
 const statutBadge = (statut) => {
   if (statut === 'livree') return 'erp-badge erp-badge-success';
@@ -65,6 +68,21 @@ export default function Commandes() {
     }
   };
 
+  const telechargerDocument = async (url, nomFichier) => {
+    setErreur('');
+    try {
+      const res = await api.get(url, { responseType: 'blob' });
+      const blobUrl = window.URL.createObjectURL(new Blob([res.data]));
+      const lien = document.createElement('a');
+      lien.href = blobUrl;
+      lien.download = nomFichier;
+      lien.click();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      setErreur('Erreur lors du téléchargement du document.');
+    }
+  };
+
   return (
     <div className="erp-page">
       <div className="erp-container erp-container-md">
@@ -90,6 +108,13 @@ export default function Commandes() {
             className="erp-input" required />
           <input name="prix_unitaire" type="number" step="0.01" value={form.prix_unitaire} placeholder="Prix unitaire" onChange={handleChange}
             className="erp-input" style={{ gridColumn: '1 / -1' }} required />
+          <ChampDate
+            label="Date de livraison souhaitée"
+            name="date_livraison"
+            value={form.date_livraison}
+            onChange={handleChange}
+            min={new Date().toISOString().split('T')[0]}
+          />
           <button type="submit" className="erp-btn erp-btn-primary" style={{ gridColumn: '1 / -1' }}>
             Créer la commande
           </button>
@@ -103,8 +128,9 @@ export default function Commandes() {
                 <th>Client</th>
                 <th>Statut</th>
                 <th>Montant</th>
-                <th>Statut</th>
+                <th>Changer statut</th>
                 <th>Paiement</th>
+                <th>Documents</th>
               </tr>
             </thead>
             <tbody>
@@ -134,6 +160,22 @@ export default function Commandes() {
                         Payer en ligne
                       </button>
                     )}
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        onClick={() => telechargerDocument(`/documents-commerciaux/commandes/${c.id}/bon-livraison`, `BL-${c.numero}.pdf`)}
+                        className="erp-btn-link erp-btn-link-primary"
+                      >
+                        Bon livraison
+                      </button>
+                      <button
+                        onClick={() => telechargerDocument(`/documents-commerciaux/commandes/${c.id}/bon-sortie`, `BS-${c.numero}.pdf`)}
+                        className="erp-btn-link erp-btn-link-primary"
+                      >
+                        Bon sortie
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

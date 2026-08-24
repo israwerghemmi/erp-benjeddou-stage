@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const DUREE_INACTIVITE_MS = 10 * 1000; // 15 minutes
+const DUREE_INACTIVITE_MS = 15 * 60 * 1000; // 15 minutes
 
 export default function useInactivityLogout() {
   const navigate = useNavigate();

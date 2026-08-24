@@ -48,6 +48,18 @@ const journalRoutes = require('./routes/journalRoutes');
 const mfaRoutes = require('./routes/mfaRoutes');
 const equipeRoutes = require('./routes/equipeRoutes');
 const sauvegardeRoutes = require('./routes/sauvegardeRoutes');
+const rechercheRoutes = require('./routes/rechercheRoutes');
+const statistiquesRoutes = require('./routes/statistiquesRoutes');
+const kycRoutes = require('./routes/kycRoutes');
+const stockRoutes = require('./routes/stockRoutes');
+const documentRoutes = require('./routes/documentRoutes');
+const documentsCommerciauxRoutes = require('./routes/documentsCommerciauxRoutes');
+app.use('/api/documents-commerciaux', documentsCommerciauxRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/stock', stockRoutes);
+app.use('/api/kyc', kycRoutes);
+app.use('/api/statistiques', statistiquesRoutes);
+app.use('/api/recherche', rechercheRoutes);
 
 // 🆕 AJOUT — limiteur strict, à placer AVANT le app.use(route) correspondant
 app.use('/api/sauvegarde', sensitiveLimiter);

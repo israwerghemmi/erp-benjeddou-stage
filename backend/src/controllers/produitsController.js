@@ -1,7 +1,18 @@
 const { journaliserAction } = require('../utils/journaliser');
+const { validerEmail, validerTelephone, validerChampsRequis, validerMontantPositif } = require('../utils/validerFormulaire');
 exports.creer = async (req, res) => {
   try {
     const { nom, reference, prix, quantite_stock, fournisseur_id } = req.body;
+    const manquants = validerChampsRequis(req.body, ['nom', 'reference', 'prix', 'quantite_stock']);
+    if (manquants.length > 0) {
+      return res.status(400).json({ message: `Champs requis manquants : ${manquants.join(', ')}` });
+    }
+    if (prix && !validerMontantPositif(prix)) {
+      return res.status(400).json({ message: 'Le prix doit être un nombre positif.' });
+    }
+    if (quantite_stock && !validerMontantPositif(quantite_stock)) {
+      return res.status(400).json({ message: 'La quantité en stock doit être un nombre positif.' });
+    }
     const produit = await req.tenantModels.Produit.create({ nom, reference, prix, quantite_stock, fournisseur_id });
     await journaliserAction(req, 'creation_produit', { produit_id: produit.id, nom: produit.nom });
     res.status(201).json(produit);

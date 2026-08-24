@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
+import ModalFactureAvoir from '../components/ModalFactureAvoir';
 
 const statutBadge = (statut) => {
   if (statut === 'payee') return 'erp-badge erp-badge-success';
@@ -11,6 +12,7 @@ export default function Factures() {
   const [factures, setFactures] = useState([]);
   const [commandes, setCommandes] = useState([]);
   const [commandeSelectionnee, setCommandeSelectionnee] = useState('');
+  const [factureAvoirSelectionnee, setFactureAvoirSelectionnee] = useState(null);
   const [erreur, setErreur] = useState('');
   const [succes, setSucces] = useState('');
 
@@ -159,6 +161,12 @@ export default function Factures() {
                       >
                         Word
                       </button>
+                      <button
+                        onClick={() => setFactureAvoirSelectionnee(f)}
+                        className="erp-btn-link erp-btn-link-danger"
+                      >
+                        Avoir
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -167,6 +175,13 @@ export default function Factures() {
           </table>
         </div>
       </div>
+
+      {factureAvoirSelectionnee && (
+        <ModalFactureAvoir
+          facture={factureAvoirSelectionnee}
+          onFermer={() => setFactureAvoirSelectionnee(null)}
+        />
+      )}
     </div>
   );
 }

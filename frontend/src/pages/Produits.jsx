@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
+import BadgeStock from '../components/BadgeStock';
 
 export default function Produits() {
   const [produits, setProduits] = useState([]);
@@ -31,7 +32,7 @@ export default function Produits() {
       setNouveauProduit({ nom: '', reference: '', prix: '', quantite_stock: '' });
       charger();
     } catch (err) {
-      setErreur('Erreur lors de l\'ajout du produit.');
+      setErreur(err.response?.data?.message || 'Erreur lors de l\'ajout du produit.');
     }
   };
 
@@ -49,7 +50,7 @@ export default function Produits() {
       setProduitEnEdition(null);
       charger();
     } catch (err) {
-      setErreur('Erreur lors de la modification.');
+      setErreur(err.response?.data?.message || 'Erreur lors de la modification.');
     }
   };
 
@@ -59,7 +60,7 @@ export default function Produits() {
       await api.delete(`/produits/${id}`);
       charger();
     } catch (err) {
-      setErreur('Erreur lors de la suppression.');
+      setErreur(err.response?.data?.message || 'Erreur lors de la suppression.');
     }
   };
 
@@ -119,7 +120,7 @@ export default function Produits() {
                       <td>{p.nom}</td>
                       <td>{p.reference}</td>
                       <td>{p.prix} DT</td>
-                      <td>{p.quantite_stock}</td>
+                      <td><BadgeStock quantiteStock={p.quantite_stock ?? 0} seuilAlerte={p.seuil_alerte ?? 5} /></td>
                       <td>
                         <div className="erp-table-actions">
                           <button onClick={() => demarrerEdition(p)} className="erp-btn-link erp-btn-link-primary">Modifier</button>

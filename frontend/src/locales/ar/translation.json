@@ -1,0 +1,55 @@
+
+{
+    "commun": {
+      "enregistrer": "حفظ",
+      "annuler": "إلغاء",
+      "supprimer": "حذف",
+      "modifier": "تعديل",
+      "ajouter": "إضافة",
+      "rechercher": "بحث"
+    },
+    "sidebar": {
+  "tableauDeBord": "لوحة القيادة",
+  "rechercheGlobale": "بحث شامل",
+  "clients": "العملاء",
+  "produits": "المنتجات",
+  "fournisseurs": "الموردون",
+  "devis": "عروض الأسعار",
+  "commandes": "الطلبات",
+  "finances": "المالية",
+  "factures": "الفواتير",
+  "historiquePaiements": "سجل المدفوعات",
+  "journalAudit": "سجل التدقيق",
+  "securiteMfa": "الأمان (MFA)",
+  "rolesPermissions": "الأدوار والصلاحيات",
+  "equipe": "الفريق",
+  "verificationKyc": "التحقق من الهوية",
+  "entrepots": "المستودعات",
+  "mouvementsStock": "حركات المخزون",
+  "gestionDocumentaire": "إدارة الوثائق",
+  "comptesEnAttente": "الحسابات المعلقة",
+  "gestionEntreprise": "إدارة الأعمال",
+  "utilisateur": "مستخدم",
+  "membre": "عضو",
+  "modeSombre": "الوضع الداكن",
+  "modeClair": "الوضع الفاتح",
+  "deconnexion": "تسجيل الخروج"
+  
+  
+},
+    "clients": {
+      "titre": "عملائي",
+      "sousTitre": "إدارة محفظة عملائك",
+      "nom": "الاسم",
+      "email": "البريد الإلكتروني",
+      "telephone": "الهاتف",
+      "adresse": "العنوان",
+      "ajouterClient": "إضافة عميل"
+    },
+    "erreurs": {
+      "champsRequis": "حقول مطلوبة مفقودة: {{champs}}",
+      "emailInvalide": "صيغة البريد الإلكتروني غير صحيحة.",
+      "telephoneInvalide": "صيغة الهاتف غير صحيحة.",
+      "erreurGenerique": "حدث خطأ."
+    }
+  }

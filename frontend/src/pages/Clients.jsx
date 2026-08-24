@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import api from '../services/api';
+import BadgeKyc from '../components/BadgeKyc';
+import UploadKyc from '../components/UploadKyc';
 
 export default function Clients() {
   const [clients, setClients] = useState([]);
   const [nouveauClient, setNouveauClient] = useState({ nom: '', email: '', telephone: '', adresse: '' });
   const [clientEnEdition, setClientEnEdition] = useState(null);
+  const [clientKycOuvert, setClientKycOuvert] = useState(null);
   const [erreur, setErreur] = useState('');
 
   const chargerClients = async () => {
@@ -55,6 +58,12 @@ export default function Clients() {
     }
   };
 
+  const toggleKyc = (id) => setClientKycOuvert((prev) => (prev === id ? null : id));
+
+  const handleKycSuccess = (clientMisAJour) => {
+    setClients((prev) => prev.map((c) => (c.id === clientMisAJour.id ? { ...c, ...clientMisAJour } : c)));
+  };
+
   return (
     <div className="erp-page">
       <div className="erp-container erp-container-md">
@@ -87,40 +96,59 @@ export default function Clients() {
                 <th>Email</th>
                 <th>Téléphone</th>
                 <th>Adresse</th>
+                <th>KYC</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {clients.map((c) => (
-                <tr key={c.id}>
-                  {clientEnEdition?.id === c.id ? (
-                    <>
-                      <td><input name="nom" value={clientEnEdition.nom} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
-                      <td><input name="email" value={clientEnEdition.email || ''} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
-                      <td><input name="telephone" value={clientEnEdition.telephone || ''} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
-                      <td><input name="adresse" value={clientEnEdition.adresse || ''} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
-                      <td>
-                        <div className="erp-table-actions">
-                          <button onClick={sauvegarderEdition} className="erp-btn-link erp-btn-link-success">Enregistrer</button>
-                          <button onClick={annulerEdition} className="erp-btn-link erp-btn-link-muted">Annuler</button>
-                        </div>
+                <Fragment key={c.id}>
+                  <tr>
+                    {clientEnEdition?.id === c.id ? (
+                      <>
+                        <td><input name="nom" value={clientEnEdition.nom} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
+                        <td><input name="email" value={clientEnEdition.email || ''} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
+                        <td><input name="telephone" value={clientEnEdition.telephone || ''} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
+                        <td><input name="adresse" value={clientEnEdition.adresse || ''} onChange={handleChangeEdition} className="erp-input erp-input-sm" /></td>
+                        <td><BadgeKyc statut={c.statut_kyc || 'non_soumis'} /></td>
+                        <td>
+                          <div className="erp-table-actions">
+                            <button onClick={sauvegarderEdition} className="erp-btn-link erp-btn-link-success">Enregistrer</button>
+                            <button onClick={annulerEdition} className="erp-btn-link erp-btn-link-muted">Annuler</button>
+                          </div>
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td>{c.nom}</td>
+                        <td>{c.email}</td>
+                        <td>{c.telephone}</td>
+                        <td>{c.adresse}</td>
+                        <td><BadgeKyc statut={c.statut_kyc || 'non_soumis'} /></td>
+                        <td>
+                          <div className="erp-table-actions">
+                            <button onClick={() => demarrerEdition(c)} className="erp-btn-link erp-btn-link-primary">Modifier</button>
+                            <button onClick={() => toggleKyc(c.id)} className="erp-btn-link erp-btn-link-primary">
+                              {clientKycOuvert === c.id ? 'Fermer' : 'KYC'}
+                            </button>
+                            <button onClick={() => supprimerClient(c.id)} className="erp-btn-link erp-btn-link-danger">Supprimer</button>
+                          </div>
+                        </td>
+                      </>
+                    )}
+                  </tr>
+                  {clientKycOuvert === c.id && (
+                    <tr>
+                      <td colSpan={6} className="erp-table-subrow">
+                        <UploadKyc
+                          clientId={c.id}
+                          statutActuel={c.statut_kyc || 'non_soumis'}
+                          onSuccess={handleKycSuccess}
+                        />
                       </td>
-                    </>
-                  ) : (
-                    <>
-                      <td>{c.nom}</td>
-                      <td>{c.email}</td>
-                      <td>{c.telephone}</td>
-                      <td>{c.adresse}</td>
-                      <td>
-                        <div className="erp-table-actions">
-                          <button onClick={() => demarrerEdition(c)} className="erp-btn-link erp-btn-link-primary">Modifier</button>
-                          <button onClick={() => supprimerClient(c.id)} className="erp-btn-link erp-btn-link-danger">Supprimer</button>
-                        </div>
-                      </td>
-                    </>
+                    </tr>
                   )}
-                </tr>
+                </Fragment>
               ))}
             </tbody>
           </table>

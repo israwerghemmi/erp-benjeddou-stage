@@ -1,4 +1,5 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const envoyerEmail = require('../utils/envoyerEmail');
 
 exports.creerSession = async (req, res) => {
   try {
@@ -32,17 +33,21 @@ exports.creerSession = async (req, res) => {
 
     res.json({ url: session.url });
   } catch (error) {
+    console.error('Erreur création session paiement :', error);
     res.status(500).json({ message: 'Erreur lors de la création de la session de paiement.', error: error.message });
   }
 };
 
 exports.verifierSession = async (req, res) => {
   try {
-    const { PaiementEnLigne, Commande } = req.tenantModels;
+    const { PaiementEnLigne, Commande, ClientCommercial } = req.tenantModels;
     const { sessionId } = req.params;
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    const paiement = await PaiementEnLigne.findOne({ where: { session_id: sessionId } });
+    const paiement = await PaiementEnLigne.findOne({
+      where: { session_id: sessionId },
+      include: [{ model: Commande, include: [ClientCommercial] }],
+    });
 
     if (!paiement) return res.status(404).json({ message: 'Paiement introuvable.' });
 
@@ -55,6 +60,14 @@ exports.verifierSession = async (req, res) => {
         commande.statut = 'livree';
         await commande.save();
       }
+
+      if (paiement.statut === 'reussi' && paiement.Commande?.ClientCommercial?.email) {
+        envoyerEmail({
+          destinataire: paiement.Commande.ClientCommercial.email,
+          sujet: `Paiement confirmé — Commande ${paiement.Commande.numero}`,
+          contenuHtml: `<p>Bonjour, nous confirmons la réception de votre paiement de ${paiement.montant} DT pour la commande ${paiement.Commande.numero}. Merci pour votre confiance.</p>`,
+        }).catch((e) => console.error('Email non envoyé :', e.message));
+      }
     } else {
       paiement.statut = 'echoue';
       await paiement.save();
@@ -62,6 +75,7 @@ exports.verifierSession = async (req, res) => {
 
     res.json({ statut: paiement.statut, commande_id: paiement.commande_id });
   } catch (error) {
+    console.error('Erreur vérification session paiement :', error);
     res.status(500).json({ message: 'Erreur lors de la vérification.', error: error.message });
   }
 };
@@ -75,6 +89,7 @@ exports.historique = async (req, res) => {
     });
     res.json(paiements);
   } catch (error) {
+    console.error('Erreur historique paiements :', error);
     res.status(500).json({ message: 'Erreur.', error: error.message });
   }
 };

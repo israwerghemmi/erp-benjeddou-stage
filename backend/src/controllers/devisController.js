@@ -1,11 +1,30 @@
+const { estDateValide, estDateFuture } = require('../utils/dateUtils');
+const { validerDate } = require('../utils/validerDate');
+const { validerChampsRequis } = require('../utils/validerFormulaire');
+const { journaliserAction } = require('../utils/journaliser');
+
 exports.creer = async (req, res) => {
   try {
-    const { numero, client_id, produits } = req.body;
+    const { numero, client_id, produits, date_livraison_souhaitee } = req.body;
     // produits attendu : [{ produit_id, quantite, prix_unitaire }, ...]
+
+    const manquants = validerChampsRequis(req.body, ['numero', 'client_id', 'produits']);
+    if (manquants.length > 0) {
+      return res.status(400).json({ message: `Champs requis manquants : ${manquants.join(', ')}` });
+    }
+    if (!Array.isArray(produits) || produits.length === 0) {
+      return res.status(400).json({ message: 'Au moins un produit est requis.' });
+    }
+    if (date_livraison_souhaitee && !estDateValide(date_livraison_souhaitee)) {
+      return res.status(400).json({ message: 'Date de livraison souhaitée invalide.' });
+    }
+    if (date_livraison_souhaitee && !estDateFuture(date_livraison_souhaitee)) {
+      return res.status(400).json({ message: 'Date de livraison souhaitée doit être une date future.' });
+    }
 
     const montant_total = produits.reduce((sum, p) => sum + (p.quantite * p.prix_unitaire), 0);
 
-    const devis = await req.tenantModels.Devis.create({ numero, client_id, montant_total });
+    const devis = await req.tenantModels.Devis.create({ numero, client_id, montant_total, date_livraison_souhaitee });
 
     // Associer les produits via la table de liaison
     for (const p of produits) {
@@ -18,8 +37,11 @@ exports.creer = async (req, res) => {
       include: [req.tenantModels.Produit, req.tenantModels.ClientCommercial],
     });
 
+    await journaliserAction(req, 'creation_devis', { devis_id: devis.id, numero: devis.numero });
+
     res.status(201).json(devisComplet);
   } catch (error) {
+    console.error('Erreur création devis :', error);
     res.status(500).json({ message: 'Erreur lors de la création du devis.', error: error.message });
   }
 };
@@ -31,6 +53,7 @@ exports.listerTous = async (req, res) => {
     });
     res.json(devis);
   } catch (error) {
+    console.error('Erreur listage devis :', error);
     res.status(500).json({ message: 'Erreur.', error: error.message });
   }
 };
@@ -43,6 +66,7 @@ exports.obtenirUn = async (req, res) => {
     if (!devis) return res.status(404).json({ message: 'Devis introuvable.' });
     res.json(devis);
   } catch (error) {
+    console.error('Erreur lecture devis :', error);
     res.status(500).json({ message: 'Erreur.', error: error.message });
   }
 };
@@ -51,10 +75,15 @@ exports.modifierStatut = async (req, res) => {
   try {
     const devis = await req.tenantModels.Devis.findByPk(req.params.id);
     if (!devis) return res.status(404).json({ message: 'Devis introuvable.' });
+
     devis.statut = req.body.statut; // en_attente | accepte | refuse
     await devis.save();
+
+    await journaliserAction(req, 'modification_statut_devis', { devis_id: devis.id, nouveau_statut: devis.statut });
+
     res.json(devis);
   } catch (error) {
+    console.error('Erreur modification statut devis :', error);
     res.status(500).json({ message: 'Erreur lors de la modification.', error: error.message });
   }
 };
@@ -63,12 +92,17 @@ exports.supprimer = async (req, res) => {
   try {
     const devis = await req.tenantModels.Devis.findByPk(req.params.id);
     if (!devis) return res.status(404).json({ message: 'Devis introuvable.' });
+
     await devis.destroy();
+    await journaliserAction(req, 'suppression_devis', { devis_id: req.params.id });
+
     res.json({ message: 'Devis supprimé.' });
   } catch (error) {
+    console.error('Erreur suppression devis :', error);
     res.status(500).json({ message: 'Erreur lors de la suppression.', error: error.message });
   }
 };
+
 exports.convertirEnCommande = async (req, res) => {
   try {
     const { Devis, Commande, Produit } = req.tenantModels;
@@ -101,6 +135,7 @@ exports.convertirEnCommande = async (req, res) => {
 
     res.status(201).json({ message: 'Devis converti en commande avec succès.', commande });
   } catch (error) {
+    console.error('Erreur conversion devis → commande :', error);
     res.status(500).json({ message: 'Erreur lors de la conversion.', error: error.message });
   }
 };

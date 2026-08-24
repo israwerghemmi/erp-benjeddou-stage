@@ -8,6 +8,7 @@ const Produit = sequelize.define('Produit', {
   reference: { type: DataTypes.STRING, unique: true },
   prix: { type: DataTypes.FLOAT, allowNull: false },
   quantite_stock: { type: DataTypes.INTEGER, defaultValue: 0 },
+  seuil_alerte: { type: DataTypes.INTEGER, defaultValue: 5 },
 }, { tableName: 'produits', timestamps: true });
 
 module.exports = Produit;
